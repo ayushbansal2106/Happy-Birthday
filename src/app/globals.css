@@ -1,0 +1,47 @@
+@import url("https://fonts.googleapis.com/css2?family=Shantell+Sans:ital,wght@0,300..800;1,300..800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: linear-gradient(75deg, 0% #ffffff 50% #ffdede 100% #a00000);
+    --foreground: #ededed;
+  }
+}
+
+body {
+  /* radial gradient */
+  background: radial-gradient(
+    circle,
+    rgba(255, 240, 252, 0.329),
+    #ffdaeb,
+    #ffe6f5
+  );
+  font-family: "Shantell Sans", cursive;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+.text-gradient {
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+  background-image: linear-gradient(to right, #b40b0b, #ff0072, #5e0075);
+}
+
+/* Add to your global.css or styles.css */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 0px; /* Width of the scrollbar */
+  display: none;
+}

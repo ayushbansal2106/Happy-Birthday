@@ -1,0 +1,786 @@
+'use client'
+
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
+import { ChevronLeft, ChevronRight, HeartIcon, X } from 'lucide-react'
+import StoryPage from './StoryPage'
+import { TimeCounter } from './TimeCounter'
+import { FlipWords } from './ui/flip-words'
+
+export default function MainContent() {
+  // State Management
+  const [currentPage, setCurrentPage] = useState(0)
+  const [selectedImage, setSelectedImage] = useState(null)
+  const [code, setCode] = useState('')
+  const [error, setError] = useState('')
+
+  // Treasure Hunt: define gift codes for each gift stage.
+  const giftCodes = ["PWD1", "PWD2", "PWD3", "PWD4", "PWD5", "PWD6"]
+
+  // Determine if we are within treasure hunt sequence
+  // (Code pages: even indices 5,7,9,11,13,15; Gift pages: odd indices 6,8,10,12,14,16)
+  const isTreasureStage = currentPage >= 5 && currentPage <= 16  
+  const isCodePage = isTreasureStage && currentPage % 2 === 1
+  const isGiftPage = isTreasureStage && currentPage % 2 === 0
+
+  // Handling code submission on Code pages
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    // For code page at index 5, gift index = 0; at 7, gift index = 1; etc.
+    let giftIndex = (currentPage - 5) / 2
+    if (code === giftCodes[giftIndex]) {
+      // Correct code: navigate to corresponding gift page
+      setCurrentPage(currentPage + 1)
+      setCode('')
+      setError("🎉 Gift Unlocked!")
+      setTimeout(() => setError(''), 3000)
+    } else {
+      setError("Oops! That's not the right code.")
+      setTimeout(() => setError(''), 4000)
+    }
+  }
+
+  // Pages array
+  const pages = [
+    // 0: Cover Page
+    <StoryPage key="cover" backgroundColor="bg-gradient-to-br from-rose-200 to-purple-200">
+      <div className="flex flex-col items-center justify-center h-full text-center">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="w-44 h-44 mb-8 rounded-full overflow-hidden shadow-md"
+        >
+          <Image
+            src="https://images.pexels.com/photos/371285/pexels-photo-371285.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+            alt="Heart icon"
+            priority={true}
+            width={176}
+            height={176}
+            className="object-cover w-full h-full"
+          />
+        </motion.div>
+        <h1 className="text-4xl md:text-5xl font-bold text-pink-600 mb-4 relative z-10">
+          Our Special Story
+        </h1>
+        <div className="text-2xl md:text-3xl text-purple-700 mb-8 relative z-10">
+          Hey Cutieee, you are<br />
+          my <FlipWords words={['Sister', 'Best Friend', 'Supporter', 'Mother', 'World']} className="text-nowrap" />
+        </div>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="bg-pink-500 text-white px-6 py-3 rounded-full text-lg shadow-btn hover:bg-pink-600 transition-colors duration-300"
+          onClick={() => setCurrentPage(1)}
+        >
+          Open Our Story
+        </motion.button>
+      </div>
+    </StoryPage>,
+
+    // 1: Journey Page
+    <StoryPage key="journey" backgroundColor="bg-gradient-to-br from-blue-200 to-green-200">
+      <h2 className="text-3xl font-bold text-blue-600 mb-6 relative z-10">Our Journey</h2>
+      <div className="space-y-4 flex-1 overflow-y-auto overflow-x-hidden rounded-xl custom-scrollbar">
+        {[
+          { date: '17 Septemper, 2024', event: 'Our Journey Began', emoji: '❤️' },
+          { date: '24 September, 2024', event: 'First Message', emoji: '💬' },
+          { date: '28 September, 2024', event: 'You sent Instagram Request', emoji: '📱' },
+          { date: '04 October, 2024', event: 'First Fight & Patch-up', emoji: '🥷' },
+          { date: '18 Feburary, 2025', event: 'First Trip Together', emoji: '✈️' },
+        ].map((item, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.2 }}
+            className="flex items-center space-x-4 bg-white p-4 rounded-xl shadow-md"
+          >
+            <span className="text-3xl">{item.emoji}</span>
+            <div className="relative z-10">
+              <p className="font-medium text-gray-800">{item.event}</p>
+              <p className="text-sm text-gray-500">{item.date}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </StoryPage>,
+
+    // 2: Time Together Page
+    <StoryPage key="time" backgroundColor="bg-gradient-to-br from-pink-200 to-purple-200">
+      <div className="flex flex-col items-center justify-center h-full text-center px-4">
+        <h2 className="text-3xl md:text-4xl font-bold text-blue-600 mb-6 relative z-10">Our Time Together</h2>
+        <div className="w-full max-w-md space-y-8">
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
+            <TimeCounter startDate="2024-09-17" label="As Friends" />
+          </motion.div>
+        </div>
+        <motion.div className="mt-6" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, delay: 0.6 }}>
+          <HeartIcon className="w-16 h-16 text-rose-500 mx-auto" />
+        </motion.div>
+        <motion.p className="text-lg md:text-xl text-blue-600 mt-5" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+          Every moment with you is a treasure!
+        </motion.p>
+      </div>
+    </StoryPage>,
+
+    // 3: Gallery Page
+    <StoryPage key="gallery" backgroundColor="bg-gradient-to-br from-blue-50 to-cyan-100">
+      <h2 className="text-3xl font-bold text-indigo-600 mb-6">Memorable Moments</h2>
+      <div className="flex-1 rounded-2xl overflow-y-auto overflow-x-hidden custom-scrollbar">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 rounded-2xl">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: i * 0.15 }}
+              className="relative aspect-square rounded-2xl overflow-hidden shadow-md cursor-pointer"
+              onClick={() => setSelectedImage(i)}
+            >
+              <Image
+                src={`/images/${i}.jpg`}
+                alt={`Gallery image ${i}`}
+                width={330}
+                height={270}
+                className="rounded-2xl object-cover h-full"
+              />
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </StoryPage>,
+
+    // 4: Letter Page
+    <StoryPage key="letter" backgroundColor="bg-gradient-to-br from-blue-200 to-gray-200">
+      <h2 className="text-3xl font-bold text-blue-600 mb-6">A Special Message</h2>
+      <div className="bg-white rounded-xl p-6 shadow-md overflow-y-auto flex-1 custom-scrollbar">
+        <div className="text-gray-700 text-lg leading-relaxed mb-4">
+            <p>Humari dosti ko bohot Kam time hua hai, lekin humne kafi jaldi ek dusre ki VIBE match kr li hai. Jab tum nahi hoti na, toh kuch bhi accha nahi lagta. Tujhe kisi ka bhi thoda bhi khush hona, bohot saari Khushi deta hai, aur kisi ka bhi Zara sa bhi rooth jana, Toh turant sorry ka pahad lekar pohoch jati hai aur saath mai extra pyar bhi dikhati hai, Tu na sabki baatein sunti hai, sabki pareshaniya bhi sunti hai, lekin kisi ko bhi apni pareshaniya nahi batati. But you are an inspiration for ME, mujhe tere jaisa independent bnna hai. Jese tune saari mushkilo mai bhi bina hile khadi reheti hai, bss I feel yehi baat mujhe tere baare mai sabse jayada inspire krti hai. <br />
+            "Even if you forget me someday after the collage, I want to see you as the world's successful person." <br /><br />
+
+            You are my bestie, aur dil se yaar tujhe mai bohot bohot bohot jayada vala pyar krta hun(as a sister), har baar bayan nahi kar pata mai tujhe, mere ghar pe mera chota bhai hai, lekin yha tu meri badi bhn bhi hai aur chota bhai bhi hai, meri best friend bhi hai, kyuki hum log sab family se itna Durr hai, toh tu abhi meri sab kuch ho gyi hai mujhe esa lgta hai, aur mai chahata hun ki duniya ke har ek shaks ko aisi dost mile. <br /><br />
+
+            Chand kahu toh chup jaoge,<br />
+            Gulab kahu toh bikhar jaoge,<br />
+            Khwab kahu toh Tut jaoge,<br />
+            Chalo apka name zindagi rakh dun,<br />
+            Maut se pehele chor toh nahi paoge. <br /><br />
+
+            You were: <br />
+            1. A person who makes me laugh in my bad as well as good times. <br />
+            2. A person who slaps me, if I do something wrong but can't tolerate the tears in my eyes. <br />
+            3. A person who was just a one call away.<br />
+            4. A person who says 'I hate you" but  loves me more than you hates me.<br />
+            5. A person who supports my dreams, who respects my parents and makes me strong enough to love myself.<br />
+            6.Someone to whom 'I' matters a lot, to whom my presence is much more important and the one who will never ever replace me.<br /><br />
+
+            Words cannot define how important you are to me and how much I like being with you. Your presence makes me feel so calm and relaxed ki mai apni life ke saare dukh dard tensions pta nhi kese bhul jata hun, jab tu saath ho pta nhi tab kuch aur ku nhi kr pata hu. Saari baate tujhse he krne ka dil krta h, gussa bhi tujhi pe aata h, pyaar bhi. Ab esa ho gya hai ki tere bina life imagine krte hue bhi drr sa lgta h. I still remember that day when we first talked, became good friends then formed the unbreakable bond of brother and sister and after that life has been totally different ever since. I wish this bond between us never breaks and keeps growing over time. <br />
+            Meri life ki sabse mtlb sabseeeee badi achievement h TUJHSE MILNA AUR YEH BOND FORM KRNA, aur jimmedari iss BOND KO TUTNE NHI DENA. 🥰💖❤💗💓💞❣💝<br /><br />
+
+            ek bahan hai meri jisse mera khoon ka rishta nahin hai par sage se jyada dil ka rishta hai vo mere ek parivaar ka hissa hai vo meri dost, bahan, hamadard sab kuchh hai vo mujhe sagee bahan se jyada pyaar karati hai main bhi usko apne parivaar jaisa maanta hun har ek chhoti baaton ko use batata hoo vo meri har ek baat ko samajh jati hai. Mere dukhon me kadam se kadam milati hai, gale lagaakar sab samajhti hai uske saath apna sa lagata hai ek pal baat na ho man bechain sa ho jaata hai vo mere lie apni har ek khushi kurbaan karati hai dosti me ameeri gareebi dikhaava se jayada dil se nibhate hai har samay madad karane ko taiyaar rahati hai. Apni kamyabi se jyada meri kamyabi chahati hai vo khud se jayada mera khayaal rakhati hai aisee bahan mujhe har janm mile khoon ka rishta nahin par dil ka rishta bahut gahara hai sabaka yahi kahana hai ek hajaaron me meree bahana hai. Uski ek smile se pta nhi mere man ko kitni Khushi milti h, uske ek hug se pura din acha ho jata h, use nhi pta ki uske saath time bitana l, masti Krna yeh sab meri saari purani tension bhi Durr krta h. Bs abb yeh iccha h ki kabhi yeh bond nhi tute.<br /><br />
+
+            Mai tujhe keheta moon hu but you are my sun 🌞, <br />
+            Because moon is overrated. You are not cold like moon but have the warmth of sun. You don't have possess scars, <br />but lighten up my world. I find myself in your presence what else could I desire. I am blessed to have you in my life,<br /> My mini mother and a mean monster.<br /><br />
+
+            Aankho ki chamak, Palkon ki shaan ho tum<br />
+            Chehre ki hasi, lamho ki muskaan ho tum<br />
+            Dhadakta hai dil bas tumhari arzoo mai<br />
+            Fir kaise na kahu meri jaan ho tum.<br /><br />
+
+            Meri behen tu mere dil ka tukda hai, tu meri jaan, shaan, baan, himmat, sahara hai tu, meri dost bhai sab hai tuu. Tujhe duniya ki saari khushiyan mile, tujhe meri bhi umar lag jaye. Tu mere liye bohot khaas h, tu Mere dil ke sabse pass hai. Tumhare saath rehekar bachpan yaad aa jata hai, masti mazak sab sab bda he maza aata hai. Lagna jhagadna sab yaadgaar ban jata hai. Meri behen tu humesha mere saath rehena, tujhe koi takleef ho toh sabse pehele mujhe kehena, tere liye mai kuch bhi kar sakta hun. Tu meri maa, baccha, bhai duniya, jahan, sab hai. Tumse he mere saare rishtey hai, mai humesha duaa krta hun ki tu mujhse aage badhe, tujhe bohot kaamyaabi safalta mile, tujhe jaisi behen mujhe humesha mile, itna aapna pyar sirf tujhe hai meri behen.<br /><br />
+
+            Tujhe kabhi btaya nhi par tu himmat hai meri, har kamzori se ladne ki takat hai tu meri, tere saath sabkuch aasan sa lgta h tere bina zindagi ko sochna bhi mushkil lgta h<br /><br />
+
+            Teri dosti ki chahat pe naaz h mujhe,<br />
+            Teri har ek baat pe etbaar h mujhe,<br />
+            Rahe teri muskurahat humesha chere par,<br />
+            Kyuki Teri muskurahat se pyar hai mujhe.<br /><br />
+
+            Tum meri life mai bohot unexpectedly aaye aur meri life ke most precious person ban gye, mujhe koi idea nhi tha ki aap itne important ban jaoge mere liye, words kam pad jayenge tumhari importance explain krne mai,
+            Bas tum humesha mere saath rehena 🥹❤😉<br /><br />
+
+            I am an overthinker, I overthink everything, if you are close to me then please remember it won't be easy to deal with me. If you don't talk to me I will overthink, if you behave differently with me rather like you normally behave, I will overthink, if you don't talk to me I will just overthink that I have done something wrong or you are angry with me or you don't care about me. I know it's not easy to deal with me & I have lost people who said they will be with forever, I love too much, I care too much, I cry too much, I give too much to people because I overthink like what if I am not perfect or someone replaces me, I have fear of losing and being left alone even after giving my best, so if you know me & if I ask you alot of questions, it's not because I doubt you, its because I just can't stop Overthinking little things, just deal with it when you say " You are my best friend or you love me, I am counting on you" 🙃🩷<br /><br />
+
+            I got attached to you so easily. Attracted to you in ways I cant explain .I care about you more than you realize.I appreciated you more than you will ever know. No words are powerful enough to describe how you make me feel. You are the first and the last thing on my mind every day.<br /><br />
+
+            I love you so much baccha ji  ❤, and I am always there for you.</p>
+        </div>
+        <p className="text-right text-rose-600 font-semibold">
+          Forever yours Bhai,<br />
+          Ayush (Gadha)❤️
+        </p>
+      </div>
+    </StoryPage>,
+
+    // Treasure Hunt Sequence Starts Here
+
+    // 5: Code Page for Gift 1
+    <StoryPage key="code-1" backgroundColor="bg-gray-50">
+      <motion.div
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="bg-white p-6 py-8 rounded-2xl shadow-question-card min-w-48 w-full max-w-[350px] relative mx-auto"
+      >
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <motion.div
+            className="text-[33px]"
+            animate={{ y: [0, -7, 0], scale: [1, 1.1, 1], rotate: [-5, 5, -5] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            🔒
+          </motion.div>
+        </div>
+        <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 1</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <input
+              type="password"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
+              placeholder="Enter secret code"
+              maxLength={6}
+              required
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span>🩷</span>
+            </div>
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+              <span>🩷</span>
+            </div>
+          </div>
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-pink-100 border-l-4 border-pink-500 text-pink-700 p-3 rounded-md shadow-sm"
+            >
+              {error}
+            </motion.p>
+          )}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            className="bg-[#A569BD] w-full font-medium text-white px-6 py-2 rounded-full shadow-btn hover:bg-[#995db1]"
+          >
+            Unlock Gift 1
+          </motion.button>
+        </form>
+      </motion.div>
+    </StoryPage>,
+
+    // 6: Gift 1 Page
+    <StoryPage key="gift-1" backgroundColor="bg-gradient-to-br from-purple-200 to-pink-200">
+      <div className="flex flex-col items-center justify-center h-full text-center">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <h2 className="text-4xl font-bold text-purple-600 mb-6">Gift 1 Unlocked! 🎁</h2>
+        </motion.div>
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="w-64 h-64 relative mb-8">
+          <Image
+            src="/gifts/gift-1.jpg"
+            alt="Gift 1"
+            width={256}
+            height={256}
+            className="rounded-xl shadow-xl object-cover"
+          />
+          <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute -top-4 -right-4 text-4xl">
+            🎉
+          </motion.div>
+        </motion.div>
+      </div>
+    </StoryPage>,
+
+    // 7: Code Page for Gift 2
+    <StoryPage key="code-2" backgroundColor="bg-gray-50">
+      <motion.div
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="bg-white p-6 py-8 rounded-2xl shadow-question-card min-w-48 w-full max-w-[350px] relative mx-auto"
+      >
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <motion.div
+            className="text-[33px]"
+            animate={{ y: [0, -7, 0], scale: [1, 1.1, 1], rotate: [-5, 5, -5] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            🔒
+          </motion.div>
+        </div>
+        <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 2</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <input
+              type="password"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
+              placeholder="Enter secret code"
+              maxLength={6}
+              required
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
+          </div>
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-pink-100 border-l-4 border-pink-500 text-pink-700 p-3 rounded-md shadow-sm"
+            >
+              {error}
+            </motion.p>
+          )}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            className="bg-[#A569BD] w-full font-medium text-white px-6 py-2 rounded-full shadow-btn hover:bg-[#995db1]"
+          >
+            Unlock Gift 2
+          </motion.button>
+        </form>
+      </motion.div>
+    </StoryPage>,
+
+    // 8: Gift 2 Page
+    <StoryPage key="gift-2" backgroundColor="bg-gradient-to-br from-green-200 to-blue-200">
+      <div className="flex flex-col items-center justify-center h-full text-center">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <h2 className="text-4xl font-bold text-green-600 mb-6">Gift 2 Unlocked! 🎁</h2>
+        </motion.div>
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="w-64 h-64 relative mb-8">
+          <Image
+            src="/gifts/gift-2.jpg"
+            alt="Gift 2"
+            width={256}
+            height={256}
+            className="rounded-xl shadow-xl object-cover"
+          />
+          <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute -top-4 -right-4 text-4xl">
+            🎊
+          </motion.div>
+        </motion.div>
+      </div>
+    </StoryPage>,
+
+    // 9: Code Page for Gift 3
+    <StoryPage key="code-3" backgroundColor="bg-gray-50">
+      <motion.div
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="bg-white p-6 py-8 rounded-2xl shadow-question-card min-w-48 w-full max-w-[350px] relative mx-auto"
+      >
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <motion.div
+            className="text-[33px]"
+            animate={{ y: [0, -7, 0], scale: [1, 1.1, 1], rotate: [-5, 5, -5] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            🔒
+          </motion.div>
+        </div>
+        <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 3</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <input
+              type="password"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
+              placeholder="Enter secret code"
+              maxLength={6}
+              required
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
+          </div>
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-pink-100 border-l-4 border-pink-500 text-pink-700 p-3 rounded-md shadow-sm"
+            >
+              {error}
+            </motion.p>
+          )}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            className="bg-[#A569BD] w-full font-medium text-white px-6 py-2 rounded-full shadow-btn hover:bg-[#995db1]"
+          >
+            Unlock Gift 3
+          </motion.button>
+        </form>
+      </motion.div>
+    </StoryPage>,
+
+    // 10: Gift 3 Page
+    <StoryPage key="gift-3" backgroundColor="bg-gradient-to-br from-orange-200 to-red-200">
+      <div className="flex flex-col items-center justify-center h-full text-center">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <h2 className="text-4xl font-bold text-orange-600 mb-6">Gift 3 Unlocked! 🎁</h2>
+        </motion.div>
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="w-64 h-64 relative mb-8">
+          <Image
+            src="/gifts/gift-3.jpg"
+            alt="Gift 3"
+            width={256}
+            height={256}
+            className="rounded-xl shadow-xl object-cover"
+          />
+          <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute -top-4 -right-4 text-4xl">
+            🎈
+          </motion.div>
+        </motion.div>
+      </div>
+    </StoryPage>,
+
+    // 11: Code Page for Gift 4
+    <StoryPage key="code-4" backgroundColor="bg-gray-50">
+      <motion.div
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="bg-white p-6 py-8 rounded-2xl shadow-question-card min-w-48 w-full max-w-[350px] relative mx-auto"
+      >
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <motion.div
+            className="text-[33px]"
+            animate={{ y: [0, -7, 0], scale: [1, 1.1, 1], rotate: [-5, 5, -5] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            🔒
+          </motion.div>
+        </div>
+        <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 4</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <input
+              type="password"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
+              placeholder="Enter secret code"
+              maxLength={6}
+              required
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
+          </div>
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-pink-100 border-l-4 border-pink-500 text-pink-700 p-3 rounded-md shadow-sm"
+            >
+              {error}
+            </motion.p>
+          )}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            className="bg-[#A569BD] w-full font-medium text-white px-6 py-2 rounded-full shadow-btn hover:bg-[#995db1]"
+          >
+            Unlock Gift 4
+          </motion.button>
+        </form>
+      </motion.div>
+    </StoryPage>,
+
+    // 12: Gift 4 Page
+    <StoryPage key="gift-4" backgroundColor="bg-gradient-to-br from-teal-200 to-cyan-200">
+      <div className="flex flex-col items-center justify-center h-full text-center">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <h2 className="text-4xl font-bold text-teal-600 mb-6">Gift 4 Unlocked! 🎁</h2>
+        </motion.div>
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="w-64 h-64 relative mb-8">
+          <Image
+            src="/gifts/gift-4.jpg"
+            alt="Gift 4"
+            width={256}
+            height={256}
+            className="rounded-xl shadow-xl object-cover"
+          />
+          <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute -top-4 -right-4 text-4xl">
+            💝
+          </motion.div>
+        </motion.div>
+      </div>
+    </StoryPage>,
+
+    // 13: Code Page for Gift 5
+    <StoryPage key="code-5" backgroundColor="bg-gray-50">
+      <motion.div
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="bg-white p-6 py-8 rounded-2xl shadow-question-card min-w-48 w-full max-w-[350px] relative mx-auto"
+      >
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <motion.div
+            className="text-[33px]"
+            animate={{ y: [0, -7, 0], scale: [1, 1.1, 1], rotate: [-5, 5, -5] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            🔒
+          </motion.div>
+        </div>
+        <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 5</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <input
+              type="password"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
+              placeholder="Enter secret code"
+              maxLength={6}
+              required
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
+          </div>
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-pink-100 border-l-4 border-pink-500 text-pink-700 p-3 rounded-md shadow-sm"
+            >
+              {error}
+            </motion.p>
+          )}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            className="bg-[#A569BD] w-full font-medium text-white px-6 py-2 rounded-full shadow-btn hover:bg-[#995db1]"
+          >
+            Unlock Gift 5
+          </motion.button>
+        </form>
+      </motion.div>
+    </StoryPage>,
+
+    // 14: Gift 5 Page
+    <StoryPage key="gift-5" backgroundColor="bg-gradient-to-br from-indigo-200 to-violet-200">
+      <div className="flex flex-col items-center justify-center h-full text-center">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <h2 className="text-4xl font-bold text-indigo-600 mb-6">Gift 5 Unlocked! 🎁</h2>
+        </motion.div>
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="w-64 h-64 relative mb-8">
+          <Image
+            src="/gifts/gift-5.jpg"
+            alt="Gift 5"
+            width={256}
+            height={256}
+            className="rounded-xl shadow-xl object-cover"
+          />
+          <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute -top-4 -right-4 text-4xl">
+            🌟
+          </motion.div>
+        </motion.div>
+      </div>
+    </StoryPage>,
+
+    // 15: Code Page for Gift 6
+    <StoryPage key="code-6" backgroundColor="bg-gray-50">
+      <motion.div
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="bg-white p-6 py-8 rounded-2xl shadow-question-card min-w-48 w-full max-w-[350px] relative mx-auto"
+      >
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <motion.div
+            className="text-[33px]"
+            animate={{ y: [0, -7, 0], scale: [1, 1.1, 1], rotate: [-5, 5, -5] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            🔒
+          </motion.div>
+        </div>
+        <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 6</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <input
+              type="password"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
+              placeholder="Enter secret code"
+              maxLength={6}
+              required
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
+          </div>
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-pink-100 border-l-4 border-pink-500 text-pink-700 p-3 rounded-md shadow-sm"
+            >
+              {error}
+            </motion.p>
+          )}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            className="bg-[#A569BD] w-full font-medium text-white px-6 py-2 rounded-full shadow-btn hover:bg-[#995db1]"
+          >
+            Unlock Gift 6
+          </motion.button>
+        </form>
+      </motion.div>
+    </StoryPage>,
+
+    // 16: Gift 6 Page
+    <StoryPage key="gift-6" backgroundColor="bg-gradient-to-br from-yellow-200 to-orange-200">
+      <div className="flex flex-col items-center justify-center h-full text-center">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <h2 className="text-4xl font-bold text-yellow-600 mb-6">Gift 6 Unlocked! 🎁</h2>
+        </motion.div>
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="w-64 h-64 relative mb-8">
+          <Image
+            src="/gifts/gift-6.jpg"
+            alt="Gift 6"
+            width={256}
+            height={256}
+            className="rounded-xl shadow-xl object-cover"
+          />
+          <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute -top-4 -right-4 text-4xl">
+            🎀
+          </motion.div>
+        </motion.div>
+      </div>
+    </StoryPage>,
+
+    // 17: Final Page
+    <StoryPage key="final" backgroundColor="bg-gradient-to-br from-pink-100 to-blue-200">
+      <div className="flex flex-col items-center justify-center h-full text-center">
+        <h2 className="text-4xl font-bold text-pink-600 mb-6">Our Story Continues...</h2>
+        <p className="text-xl text-blue-700 mb-8">Every moment we share is another step in our unforgettable story.</p>
+        <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="text-6xl mb-8">
+          ❤️
+        </motion.div>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="bg-rose-500 text-white px-6 py-3 rounded-full text-lg shadow-btn hover:bg-rose-600"
+          onClick={() => setCurrentPage(0)}
+        >
+          Start Over
+        </motion.button>
+      </div>
+    </StoryPage>,
+  ]
+
+  // Functions for regular pages (non-treasure pages) navigation
+  const regularNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, pages.length - 1))
+  }
+  const regularPrevPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 0))
+  }
+
+  return (
+    <div className="relative w-full h-screen">
+      <div className="absolute inset-0 flex items-center justify-center p-4">
+        <div className="w-full max-w-4xl h-[78vh] bg-white rounded-3xl shadow-question-card overflow-hidden relative">
+          <motion.div
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+            className="absolute"
+          >
+            <HeartIcon size={200} className="fill-pink-100 stroke-none" />
+          </motion.div>
+          <AnimatePresence mode="wait">
+            {pages[currentPage]}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Navigation Buttons */}
+      {isTreasureStage ? (
+        // In the treasure hunt sequence, only show right arrow on Gift pages
+        isGiftPage && (
+          <button
+            onClick={() => {
+              // Advance to next page (code page of next gift or Time Together if final gift)
+              const next = currentPage === 16 ? 17 : currentPage + 1
+              setCurrentPage(next)
+            }}
+            className="fixed right-4 top-1/2 transform -translate-y-1/2 p-3 bg-white/50 rounded-full shadow-md hover:bg-white transition-colors duration-300 z-40"
+          >
+            <ChevronRight className="text-pink-600" />
+          </button>
+        )
+      ) : (
+        // Regular pages: show both left and right arrows (if within bounds)
+        <>
+          {currentPage > 0 && (
+            <button
+              onClick={regularPrevPage}
+              className="fixed left-4 top-1/2 transform -translate-y-1/2 p-3 bg-white/50 rounded-full shadow-md hover:bg-white transition-colors duration-300 z-40"
+            >
+              <ChevronLeft className="text-pink-600" />
+            </button>
+          )}
+          {currentPage < pages.length - 1 && (
+            <button
+              onClick={regularNextPage}
+              className="fixed right-4 top-1/2 transform -translate-y-1/2 p-3 bg-white/50 rounded-full shadow-md hover:bg-white transition-colors duration-300 z-40"
+            >
+              <ChevronRight className="text-pink-600" />
+            </button>
+          )}
+        </>
+      )}
+
+      {/* Image Modal */}
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+            onClick={() => setSelectedImage(null)}
+          >
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="fixed left-1/2 top-4 transform -translate-x-1/2 p-3 bg-white/50 rounded-full shadow-md hover:bg-white transition-colors duration-300 z-40"
+            >
+              <X className="text-pink-500" />
+            </button>
+            <motion.div
+              initial={{ scale: 0.2 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.8 }}
+              className="bg-pink-50 p-4 rounded-3xl shadow-2xl max-w-fit w-full h-max overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Image
+                src={`/images/${selectedImage}.jpg`}
+                alt={`Gallery image ${selectedImage}`}
+                width={300}
+                height={250}
+                className="rounded-2xl w-auto h-auto"
+              />
+              <p className="mt-4 text-center text-gray-700">Moment {selectedImage}</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
