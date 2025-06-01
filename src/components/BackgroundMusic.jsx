@@ -8,19 +8,43 @@ export default function BackgroundMusic({ isMusicPlaying, setIsMusicPlaying }) {
     useEffect(() => {
         // Set default volume and autoplay on load
         if (audioRef.current) {
-            audioRef.current.volume = .5; // Set volume
+            audioRef.current.volume = 0.5; // Set volume
+            // Try to play the audio
+            const playPromise = audioRef.current.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    // Auto-play was prevented
+                    console.log("Autoplay prevented:", error);
+                    // Show a message to the user that they need to interact to play music
+                    alert("Click anywhere on the page to enable background music!");
+                });
+            }
         }
-        if (isMusicPlaying) {
-            audioRef.current.play()
-        }
-    }, [isMusicPlaying]);
+    }, []); // Run only once on mount
+
+    // Add click event listener to the document for autoplay
+    useEffect(() => {
+        const handleFirstInteraction = () => {
+            if (audioRef.current && !isMusicPlaying) {
+                audioRef.current.play()
+                    .then(() => setIsMusicPlaying(true))
+                    .catch(error => console.log("Playback failed:", error));
+                document.removeEventListener('click', handleFirstInteraction);
+            }
+        };
+
+        document.addEventListener('click', handleFirstInteraction);
+        return () => document.removeEventListener('click', handleFirstInteraction);
+    }, [isMusicPlaying, setIsMusicPlaying]);
 
     const toggleMusic = () => {
         if (audioRef.current) {
             if (isMusicPlaying) {
                 audioRef.current.pause();
             } else {
-                audioRef.current.play();
+                audioRef.current.play()
+                    .catch(error => console.log("Playback failed:", error));
             }
             setIsMusicPlaying(!isMusicPlaying);
         }
@@ -40,6 +64,7 @@ export default function BackgroundMusic({ isMusicPlaying, setIsMusicPlaying }) {
             <button
                 onClick={toggleMusic}
                 className="bg-pink-400 text-white p-3 rounded-full shadow-lg focus:outline-none hover:bg-pink-500 transition-all"
+                title={isMusicPlaying ? "Mute music" : "Play music"}
             >
                 {isMusicPlaying ? <Volume2 size={20} /> : <VolumeX size={20} />}
             </button>

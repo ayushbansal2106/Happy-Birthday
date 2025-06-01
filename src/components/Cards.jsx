@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
 import QuestionCard from './QuestionCard';
 import Confetti from 'react-confetti'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -9,6 +9,7 @@ import Countdown from './countdown.jsx'
 import BirthdayCelebration from './birthday-celebration.jsx'
 import FloatingHearts from './floating-hearts.jsx'
 import ConfettiComponent from './confetti.jsx'
+import MainContent from './MainContent.jsx'
 
 export default function Cards({ setMusicPlaying, handleShowMainContent }) {
     const [cardState, setCardState] = useState("initial"); // Tracks the current card
@@ -16,17 +17,34 @@ export default function Cards({ setMusicPlaying, handleShowMainContent }) {
     const [showConfetti, setShowConfetti] = useState(false)
     const [countdownEnded, setCountdownEnded] = useState(false)
     const [showBirthdayLoader, setShowBirthdayLoader] = useState(true)
+    const countdownEndedRef = useRef(false)
+    const [totalPunches, setTotalPunches] = useState(0)
 
     // Function to go back to "Can you be mine forever" card
     const goToMainQuestion = () => setCardState("mainQuestion");
 
+    // Handler when countdown ends
+    const handleCountdownEnd = useCallback(() => {
+        if (!countdownEndedRef.current) {
+            countdownEndedRef.current = true
+            setCountdownEnded(true)
+        }
+    }, [])
+
+    useEffect(() => {
+        if (countdownEnded) {
+            setCardState("secretCode")
+        }
+    }, [countdownEnded])
+
     // Reset showBirthdayLoader and countdownEnded when entering birthdayCelebration state
     useEffect(() => {
         if (cardState === "birthdayCelebration") {
-            setCountdownEnded(false);
-            setShowBirthdayLoader(true);
+            setCountdownEnded(false)
+            countdownEndedRef.current = false
+            setShowBirthdayLoader(true)
         }
-    }, [cardState]);
+    }, [cardState])
 
     useEffect(() => {
         const updateWindowSize = () => {
@@ -55,10 +73,9 @@ export default function Cards({ setMusicPlaying, handleShowMainContent }) {
         setShowBirthdayLoader(false)
     }
 
-    // Handler when countdown ends
-    const handleCountdownEnd = () => {
-        setCountdownEnded(true)
-        setCardState("secretCode")
+    const handleSecretCodeCorrect = (totalPunches) => {
+        setCardState("mainContent")
+        setTotalPunches(totalPunches)
     }
 
     return (
@@ -118,14 +135,14 @@ export default function Cards({ setMusicPlaying, handleShowMainContent }) {
                     <QuestionCard
                         key="yes-response"
                         emoji="🩷"
-                        question="Yesss! You always make my heart smile! I’m so lucky to have you in my life."
+                        question="Yesss! You always make my heart smile! I'm so lucky to have you in my life."
                         showButtons={false}
                         btnText="More love ahead"
                         onAnswer={() => setCardState("secretCode")} // Add a new action here
                     />
                 )}
 
-                {cardState === "secretCode" && <SecretCodeCard onCorrect={handleShowMainContent} />}
+                {cardState === "secretCode" && <SecretCodeCard onCorrect={handleSecretCodeCorrect} />}
 
                 {cardState === "areYouSure" && (
                     <QuestionCard
@@ -149,6 +166,9 @@ export default function Cards({ setMusicPlaying, handleShowMainContent }) {
                         onAnswer={goToMainQuestion}
                     />
                 )}
+
+                {cardState === "mainContent" && <MainContent initialPunches={totalPunches} />}
+
                 {showConfetti &&
                     <Confetti
                         width={windowSize.width}

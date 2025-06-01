@@ -1,26 +1,44 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { ChevronLeft, ChevronRight, HeartIcon, X } from 'lucide-react'
 import StoryPage from './StoryPage'
 import { TimeCounter } from './TimeCounter'
 import { FlipWords } from './ui/flip-words'
+import Confetti from 'react-confetti'
 
-export default function MainContent() {
+export default function MainContent({ initialPunches = 0 }) {
   // State Management
   const [currentPage, setCurrentPage] = useState(0)
   const [selectedImage, setSelectedImage] = useState(null)
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
+  const [chances, setChances] = useState(3)
+  const [totalPunches, setTotalPunches] = useState(initialPunches)
+  const [showPunishment, setShowPunishment] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
+  const [showConfetti, setShowConfetti] = useState(false)
+  const [confettiOpacity, setConfettiOpacity] = useState(1)
+  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 })
+
+  useEffect(() => {
+    setIsMounted(true)
+    const updateWindowSize = () => {
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight })
+    }
+    updateWindowSize()
+    window.addEventListener('resize', updateWindowSize)
+    return () => window.removeEventListener('resize', updateWindowSize)
+  }, [])
 
   // Treasure Hunt: define gift codes for each gift stage.
-  const giftCodes = ["PWD1", "PWD2", "PWD3", "PWD4", "PWD5", "PWD6"]
+  const giftCodes = ["PWD1", "PWD2", "PWD3", "PWD4", "PWD5", "PWD6", "PWD7", "PWD8", "PWD9", "PWD10", "PWD11", "PWD12", "PWD13"]
 
   // Determine if we are within treasure hunt sequence
-  // (Code pages: even indices 5,7,9,11,13,15; Gift pages: odd indices 6,8,10,12,14,16)
-  const isTreasureStage = currentPage >= 5 && currentPage <= 16  
+  // (Code pages: even indices 5,7,9,11,13,15,17,19,21,23,25,27,29; Gift pages: odd indices 6,8,10,12,14,16,18,20,22,24,26,28,30)
+  const isTreasureStage = currentPage >= 5 && currentPage <= 30  
   const isCodePage = isTreasureStage && currentPage % 2 === 1
   const isGiftPage = isTreasureStage && currentPage % 2 === 0
 
@@ -29,16 +47,43 @@ export default function MainContent() {
     e.preventDefault()
     // For code page at index 5, gift index = 0; at 7, gift index = 1; etc.
     let giftIndex = (currentPage - 5) / 2
-    if (code === giftCodes[giftIndex]) {
+    if (code.toLowerCase() === giftCodes[giftIndex].toLowerCase()) {
+      // Show confetti animation
+      setShowConfetti(true)
+      setConfettiOpacity(1)
+      
+      // Start fading out after 2 seconds
+      setTimeout(() => {
+        setConfettiOpacity(0)
+        // Remove confetti from DOM after fade out completes
+        setTimeout(() => setShowConfetti(false), 2000)
+      }, 2000)
+
       // Correct code: navigate to corresponding gift page
       setCurrentPage(currentPage + 1)
       setCode('')
       setError("🎉 Gift Unlocked!")
       setTimeout(() => setError(''), 3000)
+      // Reset chances for next gift
+      setChances(3)
     } else {
-      setError("Oops! That's not the right code.")
+      const newChances = chances - 1
+      if (newChances === 0) {
+        setTotalPunches(prev => prev + 1)
+        setShowPunishment(true)
+        setTimeout(() => setShowPunishment(false), 4000)
+        setChances(3)
+        setError("Oops! That's not the right code. 3 chances left!")
+      } else {
+        setChances(newChances)
+        setError(`Oops! That's not the right code. ${newChances} chances left!`)
+      }
       setTimeout(() => setError(''), 4000)
     }
+  }
+
+  if (!isMounted) {
+    return null
   }
 
   // Pages array
@@ -218,6 +263,25 @@ export default function MainContent() {
 
     // 5: Code Page for Gift 1
     <StoryPage key="code-1" backgroundColor="bg-gray-50">
+      <div className="text-center text-pink-500 mb-4" suppressHydrationWarning>
+        Chances left: {chances}
+      </div>
+      {totalPunches > 0 && (
+        <div className="text-center text-red-500 mb-4" suppressHydrationWarning>
+          Total Extra Punches: {totalPunches} 👊
+        </div>
+      )}
+      {showPunishment && (
+        <motion.p
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.5 }}
+          className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded-md shadow-sm text-center font-bold"
+          suppressHydrationWarning
+        >
+          Punishment: +1 punch 👊
+        </motion.p>
+      )}
       <motion.div
         initial={{ opacity: 0, scale: 0 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -296,6 +360,25 @@ export default function MainContent() {
 
     // 7: Code Page for Gift 2
     <StoryPage key="code-2" backgroundColor="bg-gray-50">
+      <div className="text-center text-pink-500 mb-4" suppressHydrationWarning>
+        Chances left: {chances}
+      </div>
+      {totalPunches > 0 && (
+        <div className="text-center text-red-500 mb-4" suppressHydrationWarning>
+          Total Extra Punches: {totalPunches} 👊
+        </div>
+      )}
+      {showPunishment && (
+        <motion.p
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.5 }}
+          className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded-md shadow-sm text-center font-bold"
+          suppressHydrationWarning
+        >
+          Punishment: +1 punch 👊
+        </motion.p>
+      )}
       <motion.div
         initial={{ opacity: 0, scale: 0 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -370,6 +453,25 @@ export default function MainContent() {
 
     // 9: Code Page for Gift 3
     <StoryPage key="code-3" backgroundColor="bg-gray-50">
+      <div className="text-center text-pink-500 mb-4" suppressHydrationWarning>
+        Chances left: {chances}
+      </div>
+      {totalPunches > 0 && (
+        <div className="text-center text-red-500 mb-4" suppressHydrationWarning>
+          Total Extra Punches: {totalPunches} 👊
+        </div>
+      )}
+      {showPunishment && (
+        <motion.p
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.5 }}
+          className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded-md shadow-sm text-center font-bold"
+          suppressHydrationWarning
+        >
+          Punishment: +1 punch 👊
+        </motion.p>
+      )}
       <motion.div
         initial={{ opacity: 0, scale: 0 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -444,6 +546,25 @@ export default function MainContent() {
 
     // 11: Code Page for Gift 4
     <StoryPage key="code-4" backgroundColor="bg-gray-50">
+      <div className="text-center text-pink-500 mb-4" suppressHydrationWarning>
+        Chances left: {chances}
+      </div>
+      {totalPunches > 0 && (
+        <div className="text-center text-red-500 mb-4" suppressHydrationWarning>
+          Total Extra Punches: {totalPunches} 👊
+        </div>
+      )}
+      {showPunishment && (
+        <motion.p
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.5 }}
+          className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded-md shadow-sm text-center font-bold"
+          suppressHydrationWarning
+        >
+          Punishment: +1 punch 👊
+        </motion.p>
+      )}
       <motion.div
         initial={{ opacity: 0, scale: 0 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -518,6 +639,25 @@ export default function MainContent() {
 
     // 13: Code Page for Gift 5
     <StoryPage key="code-5" backgroundColor="bg-gray-50">
+      <div className="text-center text-pink-500 mb-4" suppressHydrationWarning>
+        Chances left: {chances}
+      </div>
+      {totalPunches > 0 && (
+        <div className="text-center text-red-500 mb-4" suppressHydrationWarning>
+          Total Extra Punches: {totalPunches} 👊
+        </div>
+      )}
+      {showPunishment && (
+        <motion.p
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.5 }}
+          className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded-md shadow-sm text-center font-bold"
+          suppressHydrationWarning
+        >
+          Punishment: +1 punch 👊
+        </motion.p>
+      )}
       <motion.div
         initial={{ opacity: 0, scale: 0 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -592,6 +732,25 @@ export default function MainContent() {
 
     // 15: Code Page for Gift 6
     <StoryPage key="code-6" backgroundColor="bg-gray-50">
+      <div className="text-center text-pink-500 mb-4" suppressHydrationWarning>
+        Chances left: {chances}
+      </div>
+      {totalPunches > 0 && (
+        <div className="text-center text-red-500 mb-4" suppressHydrationWarning>
+          Total Extra Punches: {totalPunches} 👊
+        </div>
+      )}
+      {showPunishment && (
+        <motion.p
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.5 }}
+          className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded-md shadow-sm text-center font-bold"
+          suppressHydrationWarning
+        >
+          Punishment: +1 punch 👊
+        </motion.p>
+      )}
       <motion.div
         initial={{ opacity: 0, scale: 0 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -649,22 +808,774 @@ export default function MainContent() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <h2 className="text-4xl font-bold text-yellow-600 mb-6">Gift 6 Unlocked! 🎁</h2>
         </motion.div>
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          {[1, 2].map((num) => (
+            <motion.div
+              key={num}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 * num }}
+              className="w-48 h-48 relative"
+            >
+              <Image
+                src={`/gifts/gift-6-${num}.jpg`}
+                alt={`Gift 6-${num}`}
+                width={192}
+                height={192}
+                className="rounded-xl shadow-xl object-cover"
+              />
+              <motion.div
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="absolute -top-4 -right-4 text-4xl"
+              >
+                {num === 1 ? "🎀" : "🎉"}
+              </motion.div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </StoryPage>,
+
+    // 17: Code Page for Gift 7
+    <StoryPage key="code-7" backgroundColor="bg-gray-50">
+      <div className="text-center text-pink-500 mb-4" suppressHydrationWarning>
+        Chances left: {chances}
+      </div>
+      {totalPunches > 0 && (
+        <div className="text-center text-red-500 mb-4" suppressHydrationWarning>
+          Total Extra Punches: {totalPunches} 👊
+        </div>
+      )}
+      {showPunishment && (
+        <motion.p
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.5 }}
+          className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded-md shadow-sm text-center font-bold"
+          suppressHydrationWarning
+        >
+          Punishment: +1 punch 👊
+        </motion.p>
+      )}
+      <motion.div
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="bg-white p-6 py-8 rounded-2xl shadow-question-card min-w-48 w-full max-w-[350px] relative mx-auto"
+      >
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <motion.div
+            className="text-[33px]"
+            animate={{ y: [0, -7, 0], scale: [1, 1.1, 1], rotate: [-5, 5, -5] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            🔒
+          </motion.div>
+        </div>
+        <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 7</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <input
+              type="password"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
+              placeholder="Enter secret code"
+              maxLength={6}
+              required
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
+          </div>
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-pink-100 border-l-4 border-pink-500 text-pink-700 p-3 rounded-md shadow-sm"
+            >
+              {error}
+            </motion.p>
+          )}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            className="bg-[#A569BD] w-full font-medium text-white px-6 py-2 rounded-full shadow-btn hover:bg-[#995db1]"
+          >
+            Unlock Gift 7
+          </motion.button>
+        </form>
+      </motion.div>
+    </StoryPage>,
+
+    // 18: Gift 7 Page
+    <StoryPage key="gift-7" backgroundColor="bg-gradient-to-br from-purple-200 to-pink-200">
+      <div className="flex flex-col items-center justify-center h-full text-center">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <h2 className="text-4xl font-bold text-purple-600 mb-6">Gift 7 Unlocked! 🎁</h2>
+        </motion.div>
         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="w-64 h-64 relative mb-8">
           <Image
-            src="/gifts/gift-6.jpg"
-            alt="Gift 6"
+            src="/gifts/gift-7.avif"
+            alt="Gift 7"
             width={256}
             height={256}
             className="rounded-xl shadow-xl object-cover"
           />
           <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute -top-4 -right-4 text-4xl">
-            🎀
+            💝
           </motion.div>
         </motion.div>
       </div>
     </StoryPage>,
 
-    // 17: Final Page
+    // 19: Code Page for Gift 8
+    <StoryPage key="code-8" backgroundColor="bg-gray-50">
+      <div className="text-center text-pink-500 mb-4" suppressHydrationWarning>
+        Chances left: {chances}
+      </div>
+      {totalPunches > 0 && (
+        <div className="text-center text-red-500 mb-4" suppressHydrationWarning>
+          Total Extra Punches: {totalPunches} 👊
+        </div>
+      )}
+      {showPunishment && (
+        <motion.p
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.5 }}
+          className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded-md shadow-sm text-center font-bold"
+          suppressHydrationWarning
+        >
+          Punishment: +1 punch 👊
+        </motion.p>
+      )}
+      <motion.div
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="bg-white p-6 py-8 rounded-2xl shadow-question-card min-w-48 w-full max-w-[350px] relative mx-auto"
+      >
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <motion.div
+            className="text-[33px]"
+            animate={{ y: [0, -7, 0], scale: [1, 1.1, 1], rotate: [-5, 5, -5] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            🔒
+          </motion.div>
+        </div>
+        <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 8</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <input
+              type="password"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
+              placeholder="Enter secret code"
+              maxLength={6}
+              required
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
+          </div>
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-pink-100 border-l-4 border-pink-500 text-pink-700 p-3 rounded-md shadow-sm"
+            >
+              {error}
+            </motion.p>
+          )}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            className="bg-[#A569BD] w-full font-medium text-white px-6 py-2 rounded-full shadow-btn hover:bg-[#995db1]"
+          >
+            Unlock Gift 8
+          </motion.button>
+        </form>
+      </motion.div>
+    </StoryPage>,
+
+    // 20: Gift 8 Page
+    <StoryPage key="gift-8" backgroundColor="bg-gradient-to-br from-blue-200 to-purple-200">
+      <div className="flex flex-col items-center justify-center h-full text-center">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <h2 className="text-4xl font-bold text-blue-600 mb-6">Gift 8 Unlocked! 🎁</h2>
+        </motion.div>
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="w-64 h-64 relative mb-8">
+          <Image
+            src="/gifts/gift-8.jpg"
+            alt="Gift 8"
+            width={256}
+            height={256}
+            className="rounded-xl shadow-xl object-cover"
+          />
+          <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute -top-4 -right-4 text-4xl">
+            🌟
+          </motion.div>
+        </motion.div>
+      </div>
+    </StoryPage>,
+
+    // 21: Code Page for Gift 9
+    <StoryPage key="code-9" backgroundColor="bg-gray-50">
+      <div className="text-center text-pink-500 mb-4" suppressHydrationWarning>
+        Chances left: {chances}
+      </div>
+      {totalPunches > 0 && (
+        <div className="text-center text-red-500 mb-4" suppressHydrationWarning>
+          Total Extra Punches: {totalPunches} 👊
+        </div>
+      )}
+      {showPunishment && (
+        <motion.p
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.5 }}
+          className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded-md shadow-sm text-center font-bold"
+          suppressHydrationWarning
+        >
+          Punishment: +1 punch 👊
+        </motion.p>
+      )}
+      <motion.div
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="bg-white p-6 py-8 rounded-2xl shadow-question-card min-w-48 w-full max-w-[350px] relative mx-auto"
+      >
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <motion.div
+            className="text-[33px]"
+            animate={{ y: [0, -7, 0], scale: [1, 1.1, 1], rotate: [-5, 5, -5] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            🔒
+          </motion.div>
+        </div>
+        <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 9</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <input
+              type="password"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
+              placeholder="Enter secret code"
+              maxLength={6}
+              required
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
+          </div>
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-pink-100 border-l-4 border-pink-500 text-pink-700 p-3 rounded-md shadow-sm"
+            >
+              {error}
+            </motion.p>
+          )}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            className="bg-[#A569BD] w-full font-medium text-white px-6 py-2 rounded-full shadow-btn hover:bg-[#995db1]"
+          >
+            Unlock Gift 9
+          </motion.button>
+        </form>
+      </motion.div>
+    </StoryPage>,
+
+    // 22: Gift 9 Page
+    <StoryPage key="gift-9" backgroundColor="bg-gradient-to-br from-green-200 to-blue-200">
+      <div className="flex flex-col items-center justify-center h-full text-center">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <h2 className="text-4xl font-bold text-green-600 mb-6">Gift 9 Unlocked! 🎁</h2>
+        </motion.div>
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          {[1, 2].map((num) => (
+            <motion.div
+              key={num}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 * num }}
+              className="w-48 h-48 relative"
+            >
+              <Image
+                src={`/gifts/gift-9-${num}.jpg`}
+                alt={`Gift 9-${num}`}
+                width={192}
+                height={192}
+                className="rounded-xl shadow-xl object-cover"
+              />
+              <motion.div
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="absolute -top-4 -right-4 text-4xl"
+              >
+                {num === 1 ? "🎁" : "🎊"}
+              </motion.div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </StoryPage>,
+
+    // 23: Code Page for Gift 10
+    <StoryPage key="code-10" backgroundColor="bg-gray-50">
+      <div className="text-center text-pink-500 mb-4" suppressHydrationWarning>
+        Chances left: {chances}
+      </div>
+      {totalPunches > 0 && (
+        <div className="text-center text-red-500 mb-4" suppressHydrationWarning>
+          Total Extra Punches: {totalPunches} 👊
+        </div>
+      )}
+      {showPunishment && (
+        <motion.p
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.5 }}
+          className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded-md shadow-sm text-center font-bold"
+          suppressHydrationWarning
+        >
+          Punishment: +1 punch 👊
+        </motion.p>
+      )}
+      <motion.div
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="bg-white p-6 py-8 rounded-2xl shadow-question-card min-w-48 w-full max-w-[350px] relative mx-auto"
+      >
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <motion.div
+            className="text-[33px]"
+            animate={{ y: [0, -7, 0], scale: [1, 1.1, 1], rotate: [-5, 5, -5] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            🔒
+          </motion.div>
+        </div>
+        <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 10</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <input
+              type="password"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
+              placeholder="Enter secret code"
+              maxLength={6}
+              required
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
+          </div>
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-pink-100 border-l-4 border-pink-500 text-pink-700 p-3 rounded-md shadow-sm"
+            >
+              {error}
+            </motion.p>
+          )}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            className="bg-[#A569BD] w-full font-medium text-white px-6 py-2 rounded-full shadow-btn hover:bg-[#995db1]"
+          >
+            Unlock Gift 10
+          </motion.button>
+        </form>
+      </motion.div>
+    </StoryPage>,
+
+    // 24: Gift 10 Page
+    <StoryPage key="gift-10" backgroundColor="bg-gradient-to-br from-pink-200 to-purple-200">
+      <div className="flex flex-col items-center justify-center h-full text-center">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <h2 className="text-4xl font-bold text-pink-600 mb-6">Gift 10 Unlocked! 🎁</h2>
+        </motion.div>
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          {[1, 2].map((num) => (
+            <motion.div
+              key={num}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 * num }}
+              className="w-48 h-48 relative"
+            >
+              <Image
+                src={`/gifts/gift-10-${num}.jpg`}
+                alt={`Gift 10-${num}`}
+                width={192}
+                height={192}
+                className="rounded-xl shadow-xl object-cover"
+              />
+              <motion.div
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="absolute -top-4 -right-4 text-4xl"
+              >
+                {num === 1 ? "💝" : "💖"}
+              </motion.div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </StoryPage>,
+
+    // 25: Code Page for Gift 11
+    <StoryPage key="code-11" backgroundColor="bg-gray-50">
+      <div className="text-center text-pink-500 mb-4" suppressHydrationWarning>
+        Chances left: {chances}
+      </div>
+      {totalPunches > 0 && (
+        <div className="text-center text-red-500 mb-4" suppressHydrationWarning>
+          Total Extra Punches: {totalPunches} 👊
+        </div>
+      )}
+      {showPunishment && (
+        <motion.p
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.5 }}
+          className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded-md shadow-sm text-center font-bold"
+          suppressHydrationWarning
+        >
+          Punishment: +1 punch 👊
+        </motion.p>
+      )}
+      <motion.div
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="bg-white p-6 py-8 rounded-2xl shadow-question-card min-w-48 w-full max-w-[350px] relative mx-auto"
+      >
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <motion.div
+            className="text-[33px]"
+            animate={{ y: [0, -7, 0], scale: [1, 1.1, 1], rotate: [-5, 5, -5] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            🔒
+          </motion.div>
+        </div>
+        <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 11</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <input
+              type="password"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
+              placeholder="Enter secret code"
+              maxLength={6}
+              required
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
+          </div>
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-pink-100 border-l-4 border-pink-500 text-pink-700 p-3 rounded-md shadow-sm"
+            >
+              {error}
+            </motion.p>
+          )}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            className="bg-[#A569BD] w-full font-medium text-white px-6 py-2 rounded-full shadow-btn hover:bg-[#995db1]"
+          >
+            Unlock Gift 11
+          </motion.button>
+        </form>
+      </motion.div>
+    </StoryPage>,
+
+    // 26: Gift 11 Page
+    <StoryPage key="gift-11" backgroundColor="bg-gradient-to-br from-blue-200 to-indigo-200">
+      <div className="flex flex-col items-center justify-center h-full text-center">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <h2 className="text-4xl font-bold text-blue-600 mb-6">Gift 11 Unlocked! 🎁</h2>
+        </motion.div>
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="w-64 h-64 relative mb-8">
+          <Image
+            src="/gifts/gift-11.jpg"
+            alt="Gift 11"
+            width={256}
+            height={256}
+            className="rounded-xl shadow-xl object-cover"
+          />
+          <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute -top-4 -right-4 text-4xl">
+            ✨
+          </motion.div>
+        </motion.div>
+      </div>
+    </StoryPage>,
+
+    // 27: Code Page for Gift 12
+    <StoryPage key="code-12" backgroundColor="bg-gray-50">
+      <div className="text-center text-pink-500 mb-4" suppressHydrationWarning>
+        Chances left: {chances}
+      </div>
+      {totalPunches > 0 && (
+        <div className="text-center text-red-500 mb-4" suppressHydrationWarning>
+          Total Extra Punches: {totalPunches} 👊
+        </div>
+      )}
+      {showPunishment && (
+        <motion.p
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.5 }}
+          className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded-md shadow-sm text-center font-bold"
+          suppressHydrationWarning
+        >
+          Punishment: +1 punch 👊
+        </motion.p>
+      )}
+      <motion.div
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="bg-white p-6 py-8 rounded-2xl shadow-question-card min-w-48 w-full max-w-[350px] relative mx-auto"
+      >
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <motion.div
+            className="text-[33px]"
+            animate={{ y: [0, -7, 0], scale: [1, 1.1, 1], rotate: [-5, 5, -5] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            🔒
+          </motion.div>
+        </div>
+        <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 12</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <input
+              type="password"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
+              placeholder="Enter secret code"
+              maxLength={6}
+              required
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
+          </div>
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-pink-100 border-l-4 border-pink-500 text-pink-700 p-3 rounded-md shadow-sm"
+            >
+              {error}
+            </motion.p>
+          )}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            className="bg-[#A569BD] w-full font-medium text-white px-6 py-2 rounded-full shadow-btn hover:bg-[#995db1]"
+          >
+            Unlock Gift 12
+          </motion.button>
+        </form>
+      </motion.div>
+    </StoryPage>,
+
+    // 28: Gift 12 Page
+    <StoryPage key="gift-12" backgroundColor="bg-gradient-to-br from-purple-200 to-pink-200">
+      <div className="flex flex-col items-center justify-center h-full text-center">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <h2 className="text-4xl font-bold text-purple-600 mb-6">Gift 12 Unlocked! 🎁</h2>
+        </motion.div>
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="w-64 h-64 relative mb-8">
+          <Image
+            src="/gifts/gift-12.webp"
+            alt="Gift 12"
+            width={256}
+            height={256}
+            className="rounded-xl shadow-xl object-cover"
+          />
+          <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute -top-4 -right-4 text-4xl">
+            💫
+          </motion.div>
+        </motion.div>
+      </div>
+    </StoryPage>,
+
+    // 29: Code Page for Gift 13
+    <StoryPage key="code-13" backgroundColor="bg-gray-50">
+      <div className="text-center text-pink-500 mb-4" suppressHydrationWarning>
+        Chances left: {chances}
+      </div>
+      {totalPunches > 0 && (
+        <div className="text-center text-red-500 mb-4" suppressHydrationWarning>
+          Total Extra Punches: {totalPunches} 👊
+        </div>
+      )}
+      {showPunishment && (
+        <motion.p
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.5 }}
+          className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded-md shadow-sm text-center font-bold"
+          suppressHydrationWarning
+        >
+          Punishment: +1 punch 👊
+        </motion.p>
+      )}
+      <motion.div
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="bg-white p-6 py-8 rounded-2xl shadow-question-card min-w-48 w-full max-w-[350px] relative mx-auto"
+      >
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <motion.div
+            className="text-[33px]"
+            animate={{ y: [0, -7, 0], scale: [1, 1.1, 1], rotate: [-5, 5, -5] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            🔒
+          </motion.div>
+        </div>
+        <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 13</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <input
+              type="password"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
+              placeholder="Enter secret code"
+              maxLength={6}
+              required
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
+          </div>
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-pink-100 border-l-4 border-pink-500 text-pink-700 p-3 rounded-md shadow-sm"
+            >
+              {error}
+            </motion.p>
+          )}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            className="bg-[#A569BD] w-full font-medium text-white px-6 py-2 rounded-full shadow-btn hover:bg-[#995db1]"
+          >
+            Unlock Gift 13
+          </motion.button>
+        </form>
+      </motion.div>
+    </StoryPage>,
+
+    // 30: Gift 13 Page
+    <StoryPage key="gift-13" backgroundColor="bg-gradient-to-br from-rose-200 to-pink-200">
+      <div className="flex flex-col items-center justify-center h-full text-center">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <h2 className="text-4xl font-bold text-rose-600 mb-6">Gift 13 Unlocked! 🎁</h2>
+        </motion.div>
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="w-64 h-64 relative mb-8">
+          <Image
+            src="/gifts/gift-13.jpg"
+            alt="Gift 13"
+            width={256}
+            height={256}
+            className="rounded-xl shadow-xl object-cover"
+          />
+          <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute -top-4 -right-4 text-4xl">
+            💖
+          </motion.div>
+        </motion.div>
+      </div>
+    </StoryPage>,
+
+    // 31: Punches Summary Page
+    <StoryPage key="punches-summary" backgroundColor="bg-gradient-to-br from-red-100 to-pink-200">
+      <div className="flex flex-col items-center justify-center h-full text-center px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="space-y-6 flex flex-col items-center"
+        >
+          <h2 className="text-4xl font-bold text-red-600 mb-6">Your Achievement! 🏆</h2>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="w-64 h-64 flex items-center justify-center mx-auto"
+          >
+            <Image
+              src={totalPunches === 0 ? "/gifs/achievement0.gif" : "/gifs/achievement.gif"}
+              alt="Achievement GIF"
+              width={256}
+              height={256}
+              className="object-contain"
+            />
+          </motion.div>
+          <div className="space-y-4 w-full">
+            <p className="text-2xl text-red-700 font-semibold">
+              Total Extra Punches: {totalPunches}
+            </p>
+            <p className="text-xl text-red-600 italic">
+              {totalPunches === 0 ? (
+                "Wow! You're actually good at this! 😮"
+              ) : totalPunches <= 3 ? (
+                "Not bad... but could be better! 😏"
+              ) : totalPunches <= 6 ? (
+                "Someone's getting a bit too many punches! 😅"
+              ) : totalPunches <= 9 ? (
+                "Are you trying to set a record or something? 😂"
+              ) : (
+                "At this point, you're just collecting punches! 🥊"
+              )}
+            </p>
+            <p className="text-lg text-red-500 mt-4">
+              {totalPunches === 0 ? (
+                "Perfect score! You're officially a code-cracking genius! 🌟"
+              ) : totalPunches <= 3 ? (
+                "A few extra punches never hurt anyone... much! 😉"
+              ) : totalPunches <= 6 ? (
+                "Your arm must be getting tired from all these punches! 💪"
+              ) : totalPunches <= 9 ? (
+                "You're really testing my patience here! 😤"
+              ) : (
+                "I hope you're proud of your punch collection! 🏆"
+              )}
+            </p>
+          </div>
+        </motion.div>
+      </div>
+    </StoryPage>,
+
+    // 32: Final Page (Our Story Continues)
     <StoryPage key="final" backgroundColor="bg-gradient-to-br from-pink-100 to-blue-200">
       <div className="flex flex-col items-center justify-center h-full text-center">
         <h2 className="text-4xl font-bold text-pink-600 mb-6">Our Story Continues...</h2>
@@ -694,6 +1605,39 @@ export default function MainContent() {
 
   return (
     <div className="relative w-full h-screen">
+      {showConfetti && (
+        <div 
+          style={{ 
+            opacity: confettiOpacity,
+            transition: 'opacity 2s ease-in-out',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
+            zIndex: 9999
+          }}
+        >
+          <Confetti
+            width={windowSize.width}
+            height={windowSize.height}
+            numberOfPieces={500}
+            recycle={false}
+            colors={['#FF69B4', '#FFB6C1', '#FFC0CB', '#FF1493', '#DB7093', '#C71585']}
+            confettiSource={{
+              x: windowSize.width / 2,
+              y: windowSize.height / 2,
+              w: 0,
+              h: 0
+            }}
+            initialVelocityX={{ min: -7, max: 7 }}
+            initialVelocityY={{ min: -7, max: 7 }}
+            gravity={0.015}
+            tweenDuration={4000}
+          />
+        </div>
+      )}
       <div className="absolute inset-0 flex items-center justify-center p-4">
         <div className="w-full max-w-4xl h-[78vh] bg-white rounded-3xl shadow-question-card overflow-hidden relative">
           <motion.div
@@ -716,7 +1660,7 @@ export default function MainContent() {
           <button
             onClick={() => {
               // Advance to next page (code page of next gift or Time Together if final gift)
-              const next = currentPage === 16 ? 17 : currentPage + 1
+              const next = currentPage === 30 ? 31 : currentPage + 1
               setCurrentPage(next)
             }}
             className="fixed right-4 top-1/2 transform -translate-y-1/2 p-3 bg-white/50 rounded-full shadow-md hover:bg-white transition-colors duration-300 z-40"

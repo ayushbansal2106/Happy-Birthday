@@ -25,6 +25,13 @@ export default function Countdown({ targetDate, onCountdownEnd }) {
   const timerRef = useRef(null)
   const fallbackTimerRef = useRef(null)
   const [fallbackTimeLeft, setFallbackTimeLeft] = useState(10)
+  const [isCountdownEnded, setIsCountdownEnded] = useState(false)
+
+  useEffect(() => {
+    if (isCountdownEnded) {
+      onCountdownEnd()
+    }
+  }, [isCountdownEnded, onCountdownEnd])
 
   useEffect(() => {
     const difference = targetDate - new Date()
@@ -37,7 +44,7 @@ export default function Countdown({ targetDate, onCountdownEnd }) {
             if (prev <= 1) {
               clearInterval(fallbackTimerRef.current)
               fallbackTimerRef.current = null
-              onCountdownEnd()
+              setIsCountdownEnded(true)
               return 0
             }
             return prev - 1
@@ -54,13 +61,14 @@ export default function Countdown({ targetDate, onCountdownEnd }) {
       const updated = calculateTimeLeft(targetDate)
       setTimeLeft(updated)
       if (!updated || Object.keys(updated).length <= 0) {
-        onCountdownEnd()
+        setIsCountdownEnded(true)
       }
     }, 1000)
 
-    return () => clearTimeout(timerRef.current)
-  }, [timeLeft, targetDate, onCountdownEnd])
-
+    return () => {
+      clearTimeout(timerRef.current)
+    }
+  }, [timeLeft, targetDate])
 
   const icons = [
     <Heart key="heart" className="text-pink-500 fill-pink-200" />,
