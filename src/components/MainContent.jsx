@@ -202,7 +202,7 @@ export default function MainContent({ initialPunches = 0 }) {
       <h2 className="text-3xl font-bold text-blue-600 mb-6">A Special Message</h2>
       <div className="bg-white rounded-xl p-6 shadow-md overflow-y-auto flex-1 custom-scrollbar">
         <div className="text-gray-700 text-lg leading-relaxed mb-4">
-            <p>Humari dosti ko bohot Kam time hua hai, lekin humne kafi jaldi ek dusre ki VIBE match kr li hai. Jab tum nahi hoti na, toh kuch bhi accha nahi lagta. Tujhe kisi ka bhi thoda bhi khush hona, bohot saari Khushi deta hai, aur kisi ka bhi Zara sa bhi rooth jana, Toh turant sorry ka pahad lekar pohoch jati hai aur saath mai extra pyar bhi dikhati hai, Tu na sabki baatein sunti hai, sabki pareshaniya bhi sunti hai, lekin kisi ko bhi apni pareshaniya nahi batati. But you are an inspiration for ME, mujhe tere jaisa independent bnna hai. Jese tune saari mushkilo mai bhi bina hile khadi reheti hai, bss I feel yehi baat mujhe tere baare mai sabse jayada inspire krti hai. <br />
+            {/* <p>Humari dosti ko bohot Kam time hua hai, lekin humne kafi jaldi ek dusre ki VIBE match kr li hai. Jab tum nahi hoti na, toh kuch bhi accha nahi lagta. Tujhe kisi ka bhi thoda bhi khush hona, bohot saari Khushi deta hai, aur kisi ka bhi Zara sa bhi rooth jana, Toh turant sorry ka pahad lekar pohoch jati hai aur saath mai extra pyar bhi dikhati hai, Tu na sabki baatein sunti hai, sabki pareshaniya bhi sunti hai, lekin kisi ko bhi apni pareshaniya nahi batati. But you are an inspiration for ME, mujhe tere jaisa independent bnna hai. Jese tune saari mushkilo mai bhi bina hile khadi reheti hai, bss I feel yehi baat mujhe tere baare mai sabse jayada inspire krti hai. <br />
             "Even if you forget me someday after the collage, I want to see you as the world's successful person." <br /><br />
 
             You are my bestie, aur dil se yaar tujhe mai bohot bohot bohot jayada vala pyar krta hun(as a sister), har baar bayan nahi kar pata mai tujhe, mere ghar pe mera chota bhai hai, lekin yha tu meri badi bhn bhi hai aur chota bhai bhi hai, meri best friend bhi hai, kyuki hum log sab family se itna Durr hai, toh tu abhi meri sab kuch ho gyi hai mujhe esa lgta hai, aur mai chahata hun ki duniya ke har ek shaks ko aisi dost mile. <br /><br />
@@ -250,7 +250,7 @@ export default function MainContent({ initialPunches = 0 }) {
 
             I got attached to you so easily. Attracted to you in ways I cant explain .I care about you more than you realize.I appreciated you more than you will ever know. No words are powerful enough to describe how you make me feel. You are the first and the last thing on my mind every day.<br /><br />
 
-            I love you so much baccha ji  ❤, and I am always there for you.</p>
+            I love you so much baccha ji  ❤, and I am always there for you.</p> */}
         </div>
         <p className="text-right text-rose-600 font-semibold">
           Forever yours Bhai,<br />
