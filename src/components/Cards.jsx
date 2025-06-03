@@ -12,13 +12,14 @@ import ConfettiComponent from './confetti.jsx'
 import MainContent from './MainContent.jsx'
 
 export default function Cards({ setMusicPlaying, handleShowMainContent }) {
-    const [cardState, setCardState] = useState("initial"); // Tracks the current card
+    const [cardState, setCardState] = useState("initial");
     const [windowSize, setWindowSize] = useState({ width: 0, height: 0 })
     const [showConfetti, setShowConfetti] = useState(false)
     const [countdownEnded, setCountdownEnded] = useState(false)
     const [showBirthdayLoader, setShowBirthdayLoader] = useState(true)
     const countdownEndedRef = useRef(false)
     const [totalPunches, setTotalPunches] = useState(0)
+    const [isMounted, setIsMounted] = useState(false)
 
     // Function to go back to "Can you be mine forever" card
     const goToMainQuestion = () => setCardState("mainQuestion");
@@ -29,6 +30,10 @@ export default function Cards({ setMusicPlaying, handleShowMainContent }) {
             countdownEndedRef.current = true
             setCountdownEnded(true)
         }
+    }, [])
+
+    useEffect(() => {
+        setIsMounted(true)
     }, [])
 
     useEffect(() => {
@@ -47,25 +52,15 @@ export default function Cards({ setMusicPlaying, handleShowMainContent }) {
     }, [cardState])
 
     useEffect(() => {
+        if (!isMounted) return;
+
         const updateWindowSize = () => {
             setWindowSize({ width: window.innerWidth, height: window.innerHeight })
         }
         updateWindowSize()
         window.addEventListener('resize', updateWindowSize)
         return () => window.removeEventListener('resize', updateWindowSize)
-    }, [])
-
-    useEffect(() => {
-        const updateWindowSize = () => {
-            setWindowSize({ width: window.innerWidth, height: window.innerHeight })
-        }
-        updateWindowSize()
-        window.addEventListener('resize', updateWindowSize)
-
-        return () => {
-            window.removeEventListener('resize', updateWindowSize)
-        }
-    }, [])
+    }, [isMounted])
 
     // Handler when birthday loader finishes
     const handleLoaderFinish = () => {
@@ -78,6 +73,10 @@ export default function Cards({ setMusicPlaying, handleShowMainContent }) {
         setTotalPunches(totalPunches)
     }
 
+    if (!isMounted) {
+        return null; // Return null on server-side and first render
+    }
+
     return (
         <AnimatePresence>
             <motion.div
@@ -85,7 +84,8 @@ export default function Cards({ setMusicPlaying, handleShowMainContent }) {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 1 }}
-                className="min-h-screen flex items-center justify-center p-4">
+                className="min-h-screen flex items-center justify-center p-4"
+                suppressHydrationWarning>
                 {/* Conditionally render cards based on the state */}
                 {cardState === "initial" && (
                     <QuestionCard
@@ -122,7 +122,7 @@ export default function Cards({ setMusicPlaying, handleShowMainContent }) {
                             <BirthdayLoader onFinish={handleLoaderFinish} />
                         ) : !countdownEnded ? (
                             <>
-<Countdown targetDate={new Date('2024-06-09T04:30:00.000Z')} onCountdownEnd={handleCountdownEnd} />
+                                <Countdown targetDate={new Date('2024-06-09T04:30:00.000Z')} onCountdownEnd={handleCountdownEnd} />
                                 <BirthdayCelebration />
                                 <FloatingHearts />
                                 <ConfettiComponent />
@@ -138,7 +138,7 @@ export default function Cards({ setMusicPlaying, handleShowMainContent }) {
                         question="Yesss! You always make my heart smile! I'm so lucky to have you in my life."
                         showButtons={false}
                         btnText="More love ahead"
-                        onAnswer={() => setCardState("secretCode")} // Add a new action here
+                        onAnswer={() => setCardState("secretCode")}
                     />
                 )}
 
@@ -169,7 +169,7 @@ export default function Cards({ setMusicPlaying, handleShowMainContent }) {
 
                 {cardState === "mainContent" && <MainContent initialPunches={totalPunches} />}
 
-                {showConfetti &&
+                {showConfetti && isMounted &&
                     <Confetti
                         width={windowSize.width}
                         height={windowSize.height}

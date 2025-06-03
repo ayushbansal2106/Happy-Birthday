@@ -133,7 +133,9 @@ export default function MainContent({ initialPunches = 0 }) {
           { date: '24 September, 2024', event: 'First Message', emoji: '💬' },
           { date: '28 September, 2024', event: 'You sent Instagram Request', emoji: '📱' },
           { date: '04 October, 2024', event: 'First Fight & Patch-up', emoji: '🥷' },
+          { date: '05 October, 2024', event: 'First Secret Revealed', emoji: '🤫' },
           { date: '18 Feburary, 2025', event: 'First Trip Together', emoji: '✈️' },
+          { date: '06 March, 2025', event: 'Your First Bite', emoji: '😁' },
         ].map((item, index) => (
           <motion.div
             key={index}
