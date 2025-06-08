@@ -122,7 +122,7 @@ export default function Cards({ setMusicPlaying, handleShowMainContent }) {
                             <BirthdayLoader onFinish={handleLoaderFinish} />
                         ) : !countdownEnded ? (
                             <>
-                                <Countdown targetDate={new Date('2024-06-09T04:30:00.000Z')} onCountdownEnd={handleCountdownEnd} />
+                                <Countdown targetDate={new Date('2025-06-09T03:30:00.000Z')} onCountdownEnd={handleCountdownEnd} />
                                 <BirthdayCelebration />
                                 <FloatingHearts />
                                 <ConfettiComponent />

@@ -8,7 +8,7 @@ export default function BackgroundMusic({ isMusicPlaying, setIsMusicPlaying }) {
     useEffect(() => {
         // Set default volume and autoplay on load
         if (audioRef.current) {
-            audioRef.current.volume = 0.5; // Set volume
+            audioRef.current.volume = 1.0; // Set volume
             // Try to play the audio
             const playPromise = audioRef.current.play();
             

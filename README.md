@@ -34,7 +34,7 @@ Welcome to A Special Journey! This project is a personalized gift website that c
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/personalized-gift-website.git
+   git clone https://github.com/ayushbansal2106/Happy-Birthday.git
    ```
 
 2. Navigate to the project directory:

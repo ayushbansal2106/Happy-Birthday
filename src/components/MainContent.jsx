@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { ChevronLeft, ChevronRight, HeartIcon, X } from 'lucide-react'
@@ -8,6 +8,24 @@ import StoryPage from './StoryPage'
 import { TimeCounter } from './TimeCounter'
 import { FlipWords } from './ui/flip-words'
 import Confetti from 'react-confetti'
+
+// Add this CSS at the top of the file after the existing styles
+const customScrollbarStyles = `
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(216, 180, 254, 0.3);
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(147, 51, 234, 0.5);
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(147, 51, 234, 0.7);
+  }
+`;
 
 export default function MainContent({ initialPunches = 0 }) {
   // State Management
@@ -22,25 +40,30 @@ export default function MainContent({ initialPunches = 0 }) {
   const [showConfetti, setShowConfetti] = useState(false)
   const [confettiOpacity, setConfettiOpacity] = useState(1)
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 })
+  const [showVideo, setShowVideo] = useState(false)
+  const videoRef = useRef(null)
 
   useEffect(() => {
     setIsMounted(true)
+    if (typeof window !== 'undefined') {
     const updateWindowSize = () => {
       setWindowSize({ width: window.innerWidth, height: window.innerHeight })
     }
     updateWindowSize()
     window.addEventListener('resize', updateWindowSize)
     return () => window.removeEventListener('resize', updateWindowSize)
+    }
   }, [])
 
   // Treasure Hunt: define gift codes for each gift stage.
-  const giftCodes = ["PWD1", "PWD2", "PWD3", "PWD4", "PWD5", "PWD6", "PWD7", "PWD8", "PWD9", "PWD10", "PWD11", "PWD12", "PWD13"]
+  const giftCodes = ["Santosh Stationery Shop", "Classroom", "kamal", "Creative Food", "staff room", "GD room", "Ayush", "Disha", "Quality tuck", "Satyam"]
 
-  // Determine if we are within treasure hunt sequence
-  // (Code pages: even indices 5,7,9,11,13,15,17,19,21,23,25,27,29; Gift pages: odd indices 6,8,10,12,14,16,18,20,22,24,26,28,30)
-  const isTreasureStage = currentPage >= 5 && currentPage <= 30  
-  const isCodePage = isTreasureStage && currentPage % 2 === 1
-  const isGiftPage = isTreasureStage && currentPage % 2 === 0
+  // Updated: Determine if we are within treasure hunt sequence (pages 5 to 24)
+  const treasureStart = 5;
+  const treasureEnd = 24; // inclusive, last gift page
+  const isTreasureStage = currentPage >= treasureStart && currentPage <= treasureEnd;
+  const isCodePage = isTreasureStage && (currentPage - treasureStart) % 2 === 0;
+  const isGiftPage = isTreasureStage && (currentPage - treasureStart) % 2 === 1;
 
   // Handling code submission on Code pages
   const handleSubmit = (e) => {
@@ -83,6 +106,7 @@ export default function MainContent({ initialPunches = 0 }) {
   }
 
   if (!isMounted) {
+    // Only render a loading spinner or nothing until mounted
     return null
   }
 
@@ -177,7 +201,7 @@ export default function MainContent({ initialPunches = 0 }) {
       <h2 className="text-3xl font-bold text-indigo-600 mb-6">Memorable Moments</h2>
       <div className="flex-1 rounded-2xl overflow-y-auto overflow-x-hidden custom-scrollbar">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 rounded-2xl">
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, scale: 0.8 }}
@@ -189,8 +213,8 @@ export default function MainContent({ initialPunches = 0 }) {
               <Image
                 src={`/images/${i}.jpg`}
                 alt={`Gallery image ${i}`}
-                width={330}
-                height={270}
+                width={300}
+                height={200}
                 className="rounded-2xl object-cover h-full"
               />
             </motion.div>
@@ -204,7 +228,7 @@ export default function MainContent({ initialPunches = 0 }) {
       <h2 className="text-3xl font-bold text-blue-600 mb-6">A Special Message</h2>
       <div className="bg-white rounded-xl p-6 shadow-md overflow-y-auto flex-1 custom-scrollbar">
         <div className="text-gray-700 text-lg leading-relaxed mb-4">
-            {/* <p>Humari dosti ko bohot Kam time hua hai, lekin humne kafi jaldi ek dusre ki VIBE match kr li hai. Jab tum nahi hoti na, toh kuch bhi accha nahi lagta. Tujhe kisi ka bhi thoda bhi khush hona, bohot saari Khushi deta hai, aur kisi ka bhi Zara sa bhi rooth jana, Toh turant sorry ka pahad lekar pohoch jati hai aur saath mai extra pyar bhi dikhati hai, Tu na sabki baatein sunti hai, sabki pareshaniya bhi sunti hai, lekin kisi ko bhi apni pareshaniya nahi batati. But you are an inspiration for ME, mujhe tere jaisa independent bnna hai. Jese tune saari mushkilo mai bhi bina hile khadi reheti hai, bss I feel yehi baat mujhe tere baare mai sabse jayada inspire krti hai. <br />
+            <p>Humari dosti ko bohot Kam time hua hai, lekin humne kafi jaldi ek dusre ki VIBE match kr li hai. Jab tum nahi hoti na, toh kuch bhi accha nahi lagta. Tujhe kisi ka bhi thoda bhi khush hona, bohot saari Khushi deta hai, aur kisi ka bhi Zara sa bhi rooth jana, Toh turant sorry ka pahad lekar pohoch jati hai aur saath mai extra pyar bhi dikhati hai, Tu na sabki baatein sunti hai, sabki pareshaniya bhi sunti hai, lekin kisi ko bhi apni pareshaniya nahi batati. But you are an inspiration for ME, mujhe tere jaisa independent bnna hai. Jese tune saari mushkilo mai bhi bina hile khadi reheti hai, bss I feel yehi baat mujhe tere baare mai sabse jayada inspire krti hai. <br />
             "Even if you forget me someday after the collage, I want to see you as the world's successful person." <br /><br />
 
             You are my bestie, aur dil se yaar tujhe mai bohot bohot bohot jayada vala pyar krta hun(as a sister), har baar bayan nahi kar pata mai tujhe, mere ghar pe mera chota bhai hai, lekin yha tu meri badi bhn bhi hai aur chota bhai bhi hai, meri best friend bhi hai, kyuki hum log sab family se itna Durr hai, toh tu abhi meri sab kuch ho gyi hai mujhe esa lgta hai, aur mai chahata hun ki duniya ke har ek shaks ko aisi dost mile. <br /><br />
@@ -252,7 +276,7 @@ export default function MainContent({ initialPunches = 0 }) {
 
             I got attached to you so easily. Attracted to you in ways I cant explain .I care about you more than you realize.I appreciated you more than you will ever know. No words are powerful enough to describe how you make me feel. You are the first and the last thing on my mind every day.<br /><br />
 
-            I love you so much baccha ji  ❤, and I am always there for you.</p> */}
+            I love you so much baccha ji  ❤, and I am always there for you.</p>
         </div>
         <p className="text-right text-rose-600 font-semibold">
           Forever yours Bhai,<br />
@@ -300,23 +324,34 @@ export default function MainContent({ initialPunches = 0 }) {
           </motion.div>
         </div>
         <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 1</h2>
+        <div className="mb-6 p-4 bg-pink-50 rounded-xl border-2 border-pink-200">
+          <h3 className="text-lg font-semibold text-pink-700 mb-2">Puzzle Time! 🧩</h3>
+          <div className="max-h-40 overflow-y-auto pr-2">
+            <p className="text-gray-700 text-sm leading-relaxed">
+            Where books and pens are in a row, <br />
+            And all your study needs will show. <br />
+            A name that means peace and joy so sweet, <br />
+            That's where your gift and you shall meet. <br />
+            Where is it?
+            </p>
+          </div>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
             <input
               type="password"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
-              placeholder="Enter secret code"
-              maxLength={6}
-              required
+              placeholder="Enter the code"
+              className="w-full pl-12 pr-12 py-2 text-lg border-2 border-pink-300 rounded-lg focus:outline-none focus:border-pink-500 bg-white/80 backdrop-blur-sm"
+              style={{
+                fontFamily: "'Comic Sans MS', cursive",
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase'
+              }}
             />
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span>🩷</span>
-            </div>
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <span>🩷</span>
-            </div>
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-pink-500"><span>🩷</span></div>
+            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-pink-500"><span>🩷</span></div>
           </div>
           {error && (
             <motion.p
@@ -397,19 +432,37 @@ export default function MainContent({ initialPunches = 0 }) {
           </motion.div>
         </div>
         <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 2</h2>
+        <div className="mb-6 p-4 bg-blue-50 rounded-xl border-2 border-blue-200">
+          <h3 className="text-lg font-semibold text-blue-700 mb-2">Puzzle Time! 🧩</h3>
+          <div className="max-h-40 overflow-y-auto pr-2">
+            <p className="text-gray-700 text-sm leading-relaxed">
+              मैं ऐसी जगह हूँ जहाँ लोग चुपचाप बैठते हैं,<br />
+              पर मन ही मन शतरंज की बिसात बिछाते हैं।<br />
+              मैं ना मंदिर हूँ, ना जेल,<br />
+              फिर भी हर रोज़ घंटी से मेरा खेल।<br />
+              कुछ आते हैं टाइम पे, कुछ भागते हुए,<br />
+              फिर भी कहते हैं — "Sir, बस आज ही लेट हो गया हूँ!" 😅<br />
+              अब बताओ मेरा नाम —<br />
+              मैं वो जगह हूँ जहाँ दिमाग कम और बहाने ज़्यादा चलते हैं!
+            </p>
+          </div>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
             <input
               type="password"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
-              placeholder="Enter secret code"
-              maxLength={6}
-              required
+              placeholder="Enter the code"
+              className="w-full pl-12 pr-12 py-2 text-lg border-2 border-pink-300 rounded-lg focus:outline-none focus:border-pink-500 bg-white/80 backdrop-blur-sm"
+              style={{
+                fontFamily: "'Comic Sans MS', cursive",
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase'
+              }}
             />
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-pink-500"><span>🩷</span></div>
+            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-pink-500"><span>🩷</span></div>
           </div>
           {error && (
             <motion.p
@@ -490,19 +543,34 @@ export default function MainContent({ initialPunches = 0 }) {
           </motion.div>
         </div>
         <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 3</h2>
+        <div className="mb-6 p-4 bg-green-50 rounded-xl border-2 border-green-200">
+          <h3 className="text-lg font-semibold text-green-700 mb-2">Puzzle Time! 🧩</h3>
+          <div className="max-h-40 overflow-y-auto pr-2">
+            <p className="text-gray-700 text-sm leading-relaxed">
+            apne bholepan se sbka dil jitu,<br />
+            Apni shanti se sab jeet jaaun.<br />
+            Thoda sa funny, thoda normal,<br />
+            Phir bhi sab bolein "yeh hai ___!"<br />
+            Kaun hai yeh banda laajawaab?
+            </p>
+          </div>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
             <input
               type="password"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
-              placeholder="Enter secret code"
-              maxLength={6}
-              required
+              placeholder="Enter the code"
+              className="w-full pl-12 pr-12 py-2 text-lg border-2 border-pink-300 rounded-lg focus:outline-none focus:border-pink-500 bg-white/80 backdrop-blur-sm"
+              style={{
+                fontFamily: "'Comic Sans MS', cursive",
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase'
+              }}
             />
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-pink-500"><span>🩷</span></div>
+            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-pink-500"><span>🩷</span></div>
           </div>
           {error && (
             <motion.p
@@ -529,7 +597,7 @@ export default function MainContent({ initialPunches = 0 }) {
     <StoryPage key="gift-3" backgroundColor="bg-gradient-to-br from-orange-200 to-red-200">
       <div className="flex flex-col items-center justify-center h-full text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <h2 className="text-4xl font-bold text-orange-600 mb-6">Gift 3 Unlocked! 🎁</h2>
+          <h2 className="text-4xl font-bold text-orange-600 mb-6">Gift 3 Unlocked! 🎁 <br /> --By Nali ka Keeda</h2>
         </motion.div>
         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="w-64 h-64 relative mb-8">
           <Image
@@ -583,19 +651,35 @@ export default function MainContent({ initialPunches = 0 }) {
           </motion.div>
         </div>
         <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 4</h2>
+        <div className="mb-6 p-4 bg-yellow-50 rounded-xl border-2 border-yellow-200">
+          <h3 className="text-lg font-semibold text-yellow-700 mb-2">Puzzle Time! 🧩</h3>
+          <div className="max-h-40 overflow-y-auto pr-2">
+            <p className="text-gray-700 text-sm leading-relaxed">
+              Some say "yum!" with a happy cheer,<br />
+              But she walks off — won't come near.<br />
+              Where cheesy bullets take the lead,<br />
+              But not the snack she wants or needs...<br />
+              There lies your gift — go take a peek,<br />
+              At the shop that's savory, not sweet!
+            </p>
+          </div>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
             <input
               type="password"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
-              placeholder="Enter secret code"
-              maxLength={6}
-              required
+              placeholder="Enter the code"
+              className="w-full pl-12 pr-12 py-2 text-lg border-2 border-pink-300 rounded-lg focus:outline-none focus:border-pink-500 bg-white/80 backdrop-blur-sm"
+              style={{
+                fontFamily: "'Comic Sans MS', cursive",
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase'
+              }}
             />
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-pink-500"><span>🩷</span></div>
+            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-pink-500"><span>🩷</span></div>
           </div>
           {error && (
             <motion.p
@@ -676,19 +760,37 @@ export default function MainContent({ initialPunches = 0 }) {
           </motion.div>
         </div>
         <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 5</h2>
+        <div className="mb-6 p-4 bg-purple-50 rounded-xl border-2 border-purple-200">
+          <h3 className="text-lg font-semibold text-purple-700 mb-2">Puzzle Time! 🧩</h3>
+          <div className="max-h-40 overflow-y-auto pr-2">
+            <p className="text-gray-700 text-sm leading-relaxed">
+            ना घंटी बजती है,<br />
+            ना कोई खड़ा होता है।<br />
+            ना Roll Number से पुकारा जाता है,<br />
+            ना कोई Answer देता है।<br />
+            पर अंदर हलचल बहुत होती है,<br />
+            कभी चाय, कभी कॉपी-किताबों की बात होती है।<br />
+            अब बताओ उस जगह का नाम,<br />
+            जहाँ बच्चों का जाना होता है "Exams के बाद का इनाम"?
+            </p>
+          </div>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
             <input
               type="password"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
-              placeholder="Enter secret code"
-              maxLength={6}
-              required
+              placeholder="Enter the code"
+              className="w-full pl-12 pr-12 py-2 text-lg border-2 border-pink-300 rounded-lg focus:outline-none focus:border-pink-500 bg-white/80 backdrop-blur-sm"
+              style={{
+                fontFamily: "'Comic Sans MS', cursive",
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase'
+              }}
             />
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-pink-500"><span>🩷</span></div>
+            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-pink-500"><span>🩷</span></div>
           </div>
           {error && (
             <motion.p
@@ -769,19 +871,41 @@ export default function MainContent({ initialPunches = 0 }) {
           </motion.div>
         </div>
         <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 6</h2>
+        <div className="mb-6 p-4 bg-indigo-50 rounded-xl border-2 border-indigo-200">
+          <h3 className="text-lg font-semibold text-indigo-700 mb-2">Puzzle Time! 🧩</h3>
+          <div className="max-h-40 overflow-y-auto pr-2">
+            <p className="text-gray-700 text-sm leading-relaxed">
+            मैं ना अदालत हूँ, ना संसद का भवन, <br />
+            फिर भी यहाँ हर कोई देता है अपने विचारों का व्याख्यान। <br />
+            माइक नहीं होता, पर आवाज़ें गूंजती हैं, <br />
+            कभी लॉजिक, कभी इंग्लिश की तलवारें चलती हैं। <br />
+            मुझे जीतने नहीं, समझाने आता है कोई, <br />
+            फिर भी सबका मकसद — "Impress करो भाई!" 😎 <br />
+            कभी "May I add a point?" की बौछार, <br />
+            कभी "I respectfully disagree" का प्रहार। <br />
+            ना कोई किताब, ना कोई बोर्ड, <br />
+            फिर भी दिमाग की सबसे बड़ी होती है यहाँ होड़। <br />
+            अब बताओ — मैं कौन हूँ? <br />
+            जहाँ Silence एक कमजोरी और Point बनाना एक Strategy होती है!
+            </p>
+          </div>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
             <input
               type="password"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
-              placeholder="Enter secret code"
-              maxLength={6}
-              required
+              placeholder="Enter the code"
+              className="w-full pl-12 pr-12 py-2 text-lg border-2 border-pink-300 rounded-lg focus:outline-none focus:border-pink-500 bg-white/80 backdrop-blur-sm"
+              style={{
+                fontFamily: "'Comic Sans MS', cursive",
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase'
+              }}
             />
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-pink-500"><span>🩷</span></div>
+            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-pink-500"><span>🩷</span></div>
           </div>
           {error && (
             <motion.p
@@ -810,31 +934,33 @@ export default function MainContent({ initialPunches = 0 }) {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <h2 className="text-4xl font-bold text-yellow-600 mb-6">Gift 6 Unlocked! 🎁</h2>
         </motion.div>
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          {[1, 2].map((num) => (
-            <motion.div
-              key={num}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 * num }}
-              className="w-48 h-48 relative"
-            >
-              <Image
-                src={`/gifts/gift-6-${num}.jpg`}
-                alt={`Gift 6-${num}`}
-                width={192}
-                height={192}
-                className="rounded-xl shadow-xl object-cover"
-              />
+        <div className="w-full max-w-md h-80 bg-white/60 rounded-2xl overflow-y-auto custom-scrollbar p-4 mb-8">
+          <div className="grid grid-cols-2 gap-4">
+            {[1, 2, 3].map((num) => (
               <motion.div
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ repeat: Infinity, duration: 2 }}
-                className="absolute -top-4 -right-4 text-4xl"
+                key={num}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.2 * num }}
+                className="relative aspect-square rounded-xl overflow-hidden shadow-md mx-auto"
               >
-                {num === 1 ? "🎀" : "🎉"}
+                <Image
+                  src={`/gifts/gift-6-${num}.jpg`}
+                  alt={`Gift 6-${num}`}
+                  width={200}
+                  height={200}
+                  className="object-cover w-full h-full"
+                />
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                  className="absolute -top-4 -right-4 text-3xl"
+                >
+                  {num === 1 ? "🎀" : num === 2 ? "🎉" : "🎊"}
+                </motion.div>
               </motion.div>
-            </motion.div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </StoryPage>,
@@ -876,19 +1002,32 @@ export default function MainContent({ initialPunches = 0 }) {
           </motion.div>
         </div>
         <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 7</h2>
+        <div className="mb-6 p-4 bg-rose-50 rounded-xl border-2 border-rose-200">
+          <h3 className="text-lg font-semibold text-rose-700 mb-2">Puzzle Time! 🧩</h3>
+          <div className="max-h-40 overflow-y-auto pr-2">
+            <p className="text-gray-700 text-sm leading-relaxed">
+            Zindagi full energetic mode mein chalti hai is bande ke saath. <br />
+            Jab bored ho jao toh isko dhoondo, ekdum power bank jaise charge kar deta hai sabko! <br />
+            Naam bhi life se bhara hai. Guess karo?
+            </p>
+          </div>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
             <input
               type="password"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
-              placeholder="Enter secret code"
-              maxLength={6}
-              required
+              placeholder="Enter the code"
+              className="w-full pl-12 pr-12 py-2 text-lg border-2 border-pink-300 rounded-lg focus:outline-none focus:border-pink-500 bg-white/80 backdrop-blur-sm"
+              style={{
+                fontFamily: "'Comic Sans MS', cursive",
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase'
+              }}
             />
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-pink-500"><span>🩷</span></div>
+            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-pink-500"><span>🩷</span></div>
           </div>
           {error && (
             <motion.p
@@ -969,19 +1108,34 @@ export default function MainContent({ initialPunches = 0 }) {
           </motion.div>
         </div>
         <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 8</h2>
+        <div className="mb-6 p-4 bg-cyan-50 rounded-xl border-2 border-cyan-200">
+          <h3 className="text-lg font-semibold text-cyan-700 mb-2">Puzzle Time! 🧩</h3>
+          <div className="max-h-40 overflow-y-auto pr-2">
+            <p className="text-gray-700 text-sm leading-relaxed">
+            Na hoon main map, na hoon main guide, <br />
+            Par fir bhi dikhau sahi side. <br />
+            Raste pe ho ya zindagi ka mod, <br />
+            Naam se hi milta hai proper code. <br />
+            Kaun hoon main?
+            </p>
+          </div>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
             <input
               type="password"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
-              placeholder="Enter secret code"
-              maxLength={6}
-              required
+              placeholder="Enter the code"
+              className="w-full pl-12 pr-12 py-2 text-lg border-2 border-pink-300 rounded-lg focus:outline-none focus:border-pink-500 bg-white/80 backdrop-blur-sm"
+              style={{
+                fontFamily: "'Comic Sans MS', cursive",
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase'
+              }}
             />
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-pink-500"><span>🩷</span></div>
+            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-pink-500"><span>🩷</span></div>
           </div>
           {error && (
             <motion.p
@@ -1010,18 +1164,34 @@ export default function MainContent({ initialPunches = 0 }) {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <h2 className="text-4xl font-bold text-blue-600 mb-6">Gift 8 Unlocked! 🎁</h2>
         </motion.div>
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="w-64 h-64 relative mb-8">
-          <Image
-            src="/gifts/gift-8.jpg"
-            alt="Gift 8"
-            width={256}
-            height={256}
-            className="rounded-xl shadow-xl object-cover"
-          />
-          <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute -top-4 -right-4 text-4xl">
-            🌟
-          </motion.div>
-        </motion.div>
+        <div className="w-full max-w-md h-80 bg-white/60 rounded-2xl overflow-y-auto custom-scrollbar p-4 mb-8">
+          <div className="grid grid-cols-2 gap-4">
+            {[1, 2, 3, 4, 5, 6].map((num) => (
+              <motion.div
+                key={num}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.2 * num }}
+                className="relative aspect-square rounded-xl overflow-hidden shadow-md mx-auto"
+              >
+                <Image
+                  src={`/gifts/gift-8-${num}.jpg`}
+                  alt={`Gift 8-${num}`}
+                  width={200}
+                  height={200}
+                  className="object-cover w-full h-full"
+                />
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                  className="absolute -top-4 -right-4 text-3xl"
+                >
+                  {num === 1 ? "🌟" : num === 2 ? "✨" : num === 3 ? "💫" : num === 4 ? "⭐" : num === 5 ? "🌠" : "💫"}
+                </motion.div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </div>
     </StoryPage>,
 
@@ -1062,19 +1232,34 @@ export default function MainContent({ initialPunches = 0 }) {
           </motion.div>
         </div>
         <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 9</h2>
+        <div className="mb-6 p-4 bg-emerald-50 rounded-xl border-2 border-emerald-200">
+          <h3 className="text-lg font-semibold text-emerald-700 mb-2">Puzzle Time! 🧩</h3>
+          <div className="max-h-40 overflow-y-auto pr-2">
+            <p className="text-gray-700 text-sm leading-relaxed">
+            Chocolate teri muskaan jaisi sweet, <br />
+            Aur chips jaise moment – crispy treat. <br />
+            Wahi jagah jahan gifting ki thi baat, <br />
+            Wahan chhupi hai ek chhoti si saugaat. <br />
+            Kaun hai yeh apno wali feel?
+            </p>
+          </div>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
             <input
               type="password"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
-              placeholder="Enter secret code"
-              maxLength={6}
-              required
+              placeholder="Enter the code"
+              className="w-full pl-12 pr-12 py-2 text-lg border-2 border-pink-300 rounded-lg focus:outline-none focus:border-pink-500 bg-white/80 backdrop-blur-sm"
+              style={{
+                fontFamily: "'Comic Sans MS', cursive",
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase'
+              }}
             />
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-pink-500"><span>🩷</span></div>
+            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-pink-500"><span>🩷</span></div>
           </div>
           {error && (
             <motion.p
@@ -1098,37 +1283,23 @@ export default function MainContent({ initialPunches = 0 }) {
     </StoryPage>,
 
     // 22: Gift 9 Page
-    <StoryPage key="gift-9" backgroundColor="bg-gradient-to-br from-green-200 to-blue-200">
+    <StoryPage key="gift-9" backgroundColor="bg-gradient-to-br from-emerald-200 to-teal-200">
       <div className="flex flex-col items-center justify-center h-full text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <h2 className="text-4xl font-bold text-green-600 mb-6">Gift 9 Unlocked! 🎁</h2>
+          <h2 className="text-4xl font-bold text-emerald-600 mb-6">Gift 9 Unlocked! 🎁</h2>
         </motion.div>
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          {[1, 2].map((num) => (
-            <motion.div
-              key={num}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 * num }}
-              className="w-48 h-48 relative"
-            >
-              <Image
-                src={`/gifts/gift-9-${num}.jpg`}
-                alt={`Gift 9-${num}`}
-                width={192}
-                height={192}
-                className="rounded-xl shadow-xl object-cover"
-              />
-              <motion.div
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ repeat: Infinity, duration: 2 }}
-                className="absolute -top-4 -right-4 text-4xl"
-              >
-                {num === 1 ? "🎁" : "🎊"}
-              </motion.div>
-            </motion.div>
-          ))}
-        </div>
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="w-64 h-64 relative mb-8">
+          <Image
+            src="/gifts/gift-9.jpg"
+            alt="Gift 9"
+            width={256}
+            height={256}
+            className="rounded-xl shadow-xl object-cover"
+          />
+          <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute -top-4 -right-4 text-4xl">
+            🎁
+          </motion.div>
+        </motion.div>
       </div>
     </StoryPage>,
 
@@ -1169,19 +1340,34 @@ export default function MainContent({ initialPunches = 0 }) {
           </motion.div>
         </div>
         <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 10</h2>
+        <div className="mb-6 p-4 bg-violet-50 rounded-xl border-2 border-violet-200">
+          <h3 className="text-lg font-semibold text-violet-700 mb-2">Puzzle Time! 🧩</h3>
+          <div className="max-h-40 overflow-y-auto pr-2">
+            <p className="text-gray-700 text-sm leading-relaxed">
+            Naam hai sach, kaam hai fake,<br />
+              Jhoot pe jhoot no retake!<br />
+              Sab samjhein seedha, hai yeh tedha,<br />
+              Is bande pe kabhi mat lena edha.<br />
+              Kaun hai jiska sach pe kabza hai?
+            </p>
+          </div>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
             <input
               type="password"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
-              placeholder="Enter secret code"
-              maxLength={6}
-              required
+              placeholder="Enter the code"
+              className="w-full pl-12 pr-12 py-2 text-lg border-2 border-pink-300 rounded-lg focus:outline-none focus:border-pink-500 bg-white/80 backdrop-blur-sm"
+              style={{
+                fontFamily: "'Comic Sans MS', cursive",
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase'
+              }}
             />
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-pink-500"><span>🩷</span></div>
+            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-pink-500"><span>🩷</span></div>
           </div>
           {error && (
             <motion.p
@@ -1204,321 +1390,62 @@ export default function MainContent({ initialPunches = 0 }) {
       </motion.div>
     </StoryPage>,
 
-    // 24: Gift 10 Page
-    <StoryPage key="gift-10" backgroundColor="bg-gradient-to-br from-pink-200 to-purple-200">
+    // 24: Gift 10 Page (Video)
+    <StoryPage key="gift-10" backgroundColor="bg-gradient-to-br from-rose-200 to-pink-200">
       <div className="flex flex-col items-center justify-center h-full text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <h2 className="text-4xl font-bold text-pink-600 mb-6">Gift 10 Unlocked! 🎁</h2>
+          <h2 className="text-4xl font-bold text-rose-600 mb-6">Gift 10 Unlocked! 🎁 <br /> -- by Satyam and Ayush</h2>
         </motion.div>
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          {[1, 2].map((num) => (
+        <div className="w-full max-w-2xl mx-auto">
+          {showVideo ? (
             <motion.div
-              key={num}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 * num }}
-              className="w-48 h-48 relative"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="relative aspect-video rounded-xl overflow-hidden shadow-xl"
+            >
+              <video
+                ref={videoRef}
+                className="w-full h-full object-cover"
+                src="/videos/special-message.mp4"
+                autoPlay
+                onEnded={() => setShowVideo(false)}
+                controls
+                controlsList="nodownload"
+                disablePictureInPicture
+                disableRemotePlayback
+                onContextMenu={(e) => e.preventDefault()}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="relative aspect-video rounded-xl overflow-hidden shadow-xl cursor-pointer"
+              onClick={() => setShowVideo(true)}
             >
               <Image
-                src={`/gifts/gift-10-${num}.jpg`}
-                alt={`Gift 10-${num}`}
-                width={192}
-                height={192}
-                className="rounded-xl shadow-xl object-cover"
+                src="/videos/thumbnail.jpg"
+                alt="Video Thumbnail"
+                width={800}
+                height={450}
+                className="w-full h-full object-cover"
               />
-              <motion.div
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ repeat: Infinity, duration: 2 }}
-                className="absolute -top-4 -right-4 text-4xl"
-              >
-                {num === 1 ? "💝" : "💖"}
-              </motion.div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                  className="text-6xl"
+                >
+                  ▶️
+                </motion.div>
+              </div>
             </motion.div>
-          ))}
-        </div>
-      </div>
-    </StoryPage>,
-
-    // 25: Code Page for Gift 11
-    <StoryPage key="code-11" backgroundColor="bg-gray-50">
-      <div className="text-center text-pink-500 mb-4" suppressHydrationWarning>
-        Chances left: {chances}
-      </div>
-      {totalPunches > 0 && (
-        <div className="text-center text-red-500 mb-4" suppressHydrationWarning>
-          Total Extra Punches: {totalPunches} 👊
-        </div>
-      )}
-      {showPunishment && (
-        <motion.p
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.5 }}
-          className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded-md shadow-sm text-center font-bold"
-          suppressHydrationWarning
-        >
-          Punishment: +1 punch 👊
-        </motion.p>
-      )}
-      <motion.div
-        initial={{ opacity: 0, scale: 0 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4 }}
-        className="bg-white p-6 py-8 rounded-2xl shadow-question-card min-w-48 w-full max-w-[350px] relative mx-auto"
-      >
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-          <motion.div
-            className="text-[33px]"
-            animate={{ y: [0, -7, 0], scale: [1, 1.1, 1], rotate: [-5, 5, -5] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-          >
-            🔒
-          </motion.div>
-        </div>
-        <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 11</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="relative">
-            <input
-              type="password"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
-              placeholder="Enter secret code"
-              maxLength={6}
-              required
-            />
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
-          </div>
-          {error && (
-            <motion.p
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-pink-100 border-l-4 border-pink-500 text-pink-700 p-3 rounded-md shadow-sm"
-            >
-              {error}
-            </motion.p>
           )}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            type="submit"
-            className="bg-[#A569BD] w-full font-medium text-white px-6 py-2 rounded-full shadow-btn hover:bg-[#995db1]"
-          >
-            Unlock Gift 11
-          </motion.button>
-        </form>
-      </motion.div>
-    </StoryPage>,
-
-    // 26: Gift 11 Page
-    <StoryPage key="gift-11" backgroundColor="bg-gradient-to-br from-blue-200 to-indigo-200">
-      <div className="flex flex-col items-center justify-center h-full text-center">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <h2 className="text-4xl font-bold text-blue-600 mb-6">Gift 11 Unlocked! 🎁</h2>
-        </motion.div>
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="w-64 h-64 relative mb-8">
-          <Image
-            src="/gifts/gift-11.jpg"
-            alt="Gift 11"
-            width={256}
-            height={256}
-            className="rounded-xl shadow-xl object-cover"
-          />
-          <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute -top-4 -right-4 text-4xl">
-            ✨
-          </motion.div>
-        </motion.div>
-      </div>
-    </StoryPage>,
-
-    // 27: Code Page for Gift 12
-    <StoryPage key="code-12" backgroundColor="bg-gray-50">
-      <div className="text-center text-pink-500 mb-4" suppressHydrationWarning>
-        Chances left: {chances}
-      </div>
-      {totalPunches > 0 && (
-        <div className="text-center text-red-500 mb-4" suppressHydrationWarning>
-          Total Extra Punches: {totalPunches} 👊
         </div>
-      )}
-      {showPunishment && (
-        <motion.p
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.5 }}
-          className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded-md shadow-sm text-center font-bold"
-          suppressHydrationWarning
-        >
-          Punishment: +1 punch 👊
-        </motion.p>
-      )}
-      <motion.div
-        initial={{ opacity: 0, scale: 0 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4 }}
-        className="bg-white p-6 py-8 rounded-2xl shadow-question-card min-w-48 w-full max-w-[350px] relative mx-auto"
-      >
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-          <motion.div
-            className="text-[33px]"
-            animate={{ y: [0, -7, 0], scale: [1, 1.1, 1], rotate: [-5, 5, -5] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-          >
-            🔒
-          </motion.div>
-        </div>
-        <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 12</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="relative">
-            <input
-              type="password"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
-              placeholder="Enter secret code"
-              maxLength={6}
-              required
-            />
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
-          </div>
-          {error && (
-            <motion.p
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-pink-100 border-l-4 border-pink-500 text-pink-700 p-3 rounded-md shadow-sm"
-            >
-              {error}
-            </motion.p>
-          )}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            type="submit"
-            className="bg-[#A569BD] w-full font-medium text-white px-6 py-2 rounded-full shadow-btn hover:bg-[#995db1]"
-          >
-            Unlock Gift 12
-          </motion.button>
-        </form>
-      </motion.div>
-    </StoryPage>,
-
-    // 28: Gift 12 Page
-    <StoryPage key="gift-12" backgroundColor="bg-gradient-to-br from-purple-200 to-pink-200">
-      <div className="flex flex-col items-center justify-center h-full text-center">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <h2 className="text-4xl font-bold text-purple-600 mb-6">Gift 12 Unlocked! 🎁</h2>
-        </motion.div>
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="w-64 h-64 relative mb-8">
-          <Image
-            src="/gifts/gift-12.webp"
-            alt="Gift 12"
-            width={256}
-            height={256}
-            className="rounded-xl shadow-xl object-cover"
-          />
-          <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute -top-4 -right-4 text-4xl">
-            💫
-          </motion.div>
-        </motion.div>
       </div>
     </StoryPage>,
 
-    // 29: Code Page for Gift 13
-    <StoryPage key="code-13" backgroundColor="bg-gray-50">
-      <div className="text-center text-pink-500 mb-4" suppressHydrationWarning>
-        Chances left: {chances}
-      </div>
-      {totalPunches > 0 && (
-        <div className="text-center text-red-500 mb-4" suppressHydrationWarning>
-          Total Extra Punches: {totalPunches} 👊
-        </div>
-      )}
-      {showPunishment && (
-        <motion.p
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.5 }}
-          className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded-md shadow-sm text-center font-bold"
-          suppressHydrationWarning
-        >
-          Punishment: +1 punch 👊
-        </motion.p>
-      )}
-      <motion.div
-        initial={{ opacity: 0, scale: 0 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4 }}
-        className="bg-white p-6 py-8 rounded-2xl shadow-question-card min-w-48 w-full max-w-[350px] relative mx-auto"
-      >
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-          <motion.div
-            className="text-[33px]"
-            animate={{ y: [0, -7, 0], scale: [1, 1.1, 1], rotate: [-5, 5, -5] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-          >
-            🔒
-          </motion.div>
-        </div>
-        <h2 className="text-xl font-medium text-gradient mb-4 text-center">Enter the code for Gift 13</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="relative">
-            <input
-              type="password"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              className="w-full px-4 py-2 text-center bg-pink-50 border-2 border-pink-300 rounded-full focus:outline-none focus:border-purple-400 transition-colors duration-300"
-              placeholder="Enter secret code"
-              maxLength={6}
-              required
-            />
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span>🩷</span></div>
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span>🩷</span></div>
-          </div>
-          {error && (
-            <motion.p
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-pink-100 border-l-4 border-pink-500 text-pink-700 p-3 rounded-md shadow-sm"
-            >
-              {error}
-            </motion.p>
-          )}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            type="submit"
-            className="bg-[#A569BD] w-full font-medium text-white px-6 py-2 rounded-full shadow-btn hover:bg-[#995db1]"
-          >
-            Unlock Gift 13
-          </motion.button>
-        </form>
-      </motion.div>
-    </StoryPage>,
-
-    // 30: Gift 13 Page
-    <StoryPage key="gift-13" backgroundColor="bg-gradient-to-br from-rose-200 to-pink-200">
-      <div className="flex flex-col items-center justify-center h-full text-center">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <h2 className="text-4xl font-bold text-rose-600 mb-6">Gift 13 Unlocked! 🎁</h2>
-        </motion.div>
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="w-64 h-64 relative mb-8">
-          <Image
-            src="/gifts/gift-13.jpg"
-            alt="Gift 13"
-            width={256}
-            height={256}
-            className="rounded-xl shadow-xl object-cover"
-          />
-          <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute -top-4 -right-4 text-4xl">
-            💖
-          </motion.div>
-        </motion.div>
-      </div>
-    </StoryPage>,
-
-    // 31: Punches Summary Page
+    // 25: Punches Summary Page
     <StoryPage key="punches-summary" backgroundColor="bg-gradient-to-br from-red-100 to-pink-200">
       <div className="flex flex-col items-center justify-center h-full text-center px-4">
         <motion.div
@@ -1577,7 +1504,7 @@ export default function MainContent({ initialPunches = 0 }) {
       </div>
     </StoryPage>,
 
-    // 32: Final Page (Our Story Continues)
+    // 26: Final Page (Our Story Continues)
     <StoryPage key="final" backgroundColor="bg-gradient-to-br from-pink-100 to-blue-200">
       <div className="flex flex-col items-center justify-center h-full text-center">
         <h2 className="text-4xl font-bold text-pink-600 mb-6">Our Story Continues...</h2>
@@ -1607,7 +1534,7 @@ export default function MainContent({ initialPunches = 0 }) {
 
   return (
     <div className="relative w-full h-screen">
-      {showConfetti && (
+      {isMounted && showConfetti && (
         <div 
           style={{ 
             opacity: confettiOpacity,
@@ -1657,14 +1584,10 @@ export default function MainContent({ initialPunches = 0 }) {
 
       {/* Navigation Buttons */}
       {isTreasureStage ? (
-        // In the treasure hunt sequence, only show right arrow on Gift pages
-        isGiftPage && (
+        // Only show right arrow on gift pages, never on code pages, for the full treasure hunt sequence
+        isGiftPage && currentPage < pages.length - 1 && (
           <button
-            onClick={() => {
-              // Advance to next page (code page of next gift or Time Together if final gift)
-              const next = currentPage === 30 ? 31 : currentPage + 1
-              setCurrentPage(next)
-            }}
+            onClick={() => setCurrentPage(currentPage + 1)}
             className="fixed right-4 top-1/2 transform -translate-y-1/2 p-3 bg-white/50 rounded-full shadow-md hover:bg-white transition-colors duration-300 z-40"
           >
             <ChevronRight className="text-pink-600" />
@@ -1727,6 +1650,7 @@ export default function MainContent({ initialPunches = 0 }) {
           </motion.div>
         )}
       </AnimatePresence>
+      <style jsx global>{customScrollbarStyles}</style>
     </div>
   )
 }
