@@ -657,7 +657,7 @@ export default function MainContent({ initialPunches = 0 }) {
             <p className="text-gray-700 text-sm leading-relaxed">
               Some say "yum!" with a happy cheer,<br />
               But she walks off — won't come near.<br />
-              Where cheesy bullets take the lead,<br />
+              Where bullets take the lead,<br />
               But not the snack she wants or needs...<br />
               There lies your gift — go take a peek,<br />
               At the shop that's savory, not sweet!
